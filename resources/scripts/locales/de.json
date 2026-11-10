@@ -282,7 +282,27 @@
     "inactive": "Inaktiv",
     "all_statuses": "Alle Status",
     "active_service": "Aktiver Artikel",
-    "active_service_help": "Aktive Artikel werden im KI-Assistenten angeboten."
+    "active_service_help": "Aktive Artikel werden im KI-Assistenten angeboten.",
+    "brand": "Marke",
+    "select_a_brand": "Marke auswählen"
+  },
+  "brands": {
+    "title": "Marken",
+    "name": "Marke",
+    "add_brand": "Neue Marke",
+    "add_new_brand": "Marke hinzufügen",
+    "add_new_brand_inline": "Neue Marke hinzufügen",
+    "edit_brand": "Marke bearbeiten",
+    "no_brands": "Noch keine Marken!",
+    "list_of_brands": "Dieser Bereich enthält die Liste der Marken.",
+    "select_a_brand": "Marke auswählen",
+    "filter_without_brand": "Ohne Marke",
+    "without_brand": "Ohne Marke",
+    "confirm_delete": "Möchten Sie diese Marke wirklich löschen? Weisen Sie die zugehörigen Artikel vorher einer anderen Marke zu oder entfernen Sie die Marke.",
+    "created_message": "Marke erfolgreich erstellt",
+    "updated_message": "Marke aktualisiert",
+    "deleted_message": "Marke gelöscht",
+    "brand_attached_message": "Eine Marke kann nicht gelöscht werden, solange ein Artikel sie verwendet."
   },
   "estimates": {
     "title": "Angebote",

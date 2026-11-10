@@ -25,6 +25,17 @@
           </BaseButton>
 
           <BaseButton
+            v-if="userStore.hasAbilities(abilities.VIEW_BRAND)"
+            variant="primary-outline"
+            @click="$router.push('/admin/brands')"
+          >
+            <template #left="slotProps">
+              <BaseIcon name="TagIcon" :class="slotProps.class" />
+            </template>
+            {{ $t('brands.title') }}
+          </BaseButton>
+
+          <BaseButton
             v-if="userStore.hasAbilities(abilities.CREATE_ITEM)"
             @click="$router.push('/admin/items/create')"
           >
@@ -77,6 +88,32 @@
           :options="statusOptions"
           :placeholder="$t('items.all_statuses')"
           class="w-full"
+        />
+      </BaseInputGroup>
+
+      <BaseInputGroup :label="$t('items.brand')" class="text-left">
+        <BaseMultiselect
+          v-model="filters.brand_id"
+          :placeholder="$t('items.select_a_brand')"
+          value-prop="id"
+          track-by="name"
+          :filter-results="false"
+          :allow-empty="true"
+          :clearable="true"
+          label="name"
+          resolve-on-load
+          :delay="500"
+          searchable
+          class="w-full"
+          :options="searchBrands"
+          @update:model-value="onBrandFilterChange"
+        />
+      </BaseInputGroup>
+
+      <BaseInputGroup class="text-left" :label="$t('brands.filter_without_brand')">
+        <BaseSwitch
+          :model-value="filters.without_brand"
+          @update:model-value="toggleWithoutBrand"
         />
       </BaseInputGroup>
     </BaseFilterWrapper>
@@ -187,6 +224,12 @@
           </span>
         </template>
 
+        <template #cell-brand="{ row }">
+          <span>
+            {{ row.data.brand ? row.data.brand.name : '—' }}
+          </span>
+        </template>
+
         <template #cell-price="{ row }">
           <BaseFormatMoney
             :amount="row.data.price"
@@ -239,7 +282,9 @@ const filters = reactive({
   name: '',
   unit_id: '',
   price: '',
+  brand_id: '',
   active: '',
+  without_brand: false,
 })
 
 const table = ref(null)
@@ -282,6 +327,11 @@ const itemColumns = computed(() => {
       tdClass: 'font-medium text-gray-900',
     },
     { key: 'unit_name', label: t('items.unit') },
+    {
+      key: 'brand',
+      label: t('items.brand'),
+      tdClass: 'font-medium text-gray-900',
+    },
     { key: 'price', label: t('items.unit_price') },
     { key: 'created_at', label: t('items.added_on') },
 
@@ -314,7 +364,9 @@ function clearFilter() {
   filters.name = ''
   filters.unit_id = ''
   filters.price = ''
+  filters.brand_id = ''
   filters.active = ''
+  filters.without_brand = false
 }
 
 function hasAbilities() {
@@ -343,12 +395,36 @@ async function searchUnits(search) {
   return res.data.data
 }
 
+async function searchBrands(search) {
+  let res = await itemStore.fetchItemBrands({ search })
+
+  return res.data.data
+}
+
+// Without-brand and brand_id are mutually exclusive on both the
+// controller and the request layer. Selecting one clears the other
+// in the UI so the filter group doesn't accept contradictory values.
+function onBrandFilterChange(value) {
+  if (value) {
+    filters.without_brand = false
+  }
+}
+
+function toggleWithoutBrand(value) {
+  filters.without_brand = value
+  if (value) {
+    filters.brand_id = ''
+  }
+}
+
 async function fetchData({ page, filter, sort }) {
   let data = {
     search: filters.name,
     unit_id: filters.unit_id !== null ? filters.unit_id : '',
     price: Math.round(filters.price * 100),
     active: filters.active !== '' && filters.active !== null && filters.active !== undefined ? filters.active : '',
+    brand_id: filters.brand_id !== null && filters.brand_id !== '' ? filters.brand_id : '',
+    without_brand: filters.without_brand ? '1' : '',
     orderByField: sort.fieldName || 'created_at',
     orderBy: sort.order || 'desc',
     page,

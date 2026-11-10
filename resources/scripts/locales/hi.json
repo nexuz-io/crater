@@ -282,7 +282,27 @@
     "inactive": "निष्क्रिय",
     "all_statuses": "सभी स्थितियाँ",
     "active_service": "सक्रिय उत्पाद",
-    "active_service_help": "सक्रिय उत्पाद AI सहायक में पेश किए जाते हैं।"
+    "active_service_help": "सक्रिय उत्पाद AI सहायक में पेश किए जाते हैं।",
+    "brand": "Brand",
+    "select_a_brand": "select a brand"
+  },
+  "brands": {
+    "title": "Brands",
+    "name": "Brand",
+    "add_brand": "New Brand",
+    "add_new_brand": "Add new brand",
+    "add_new_brand_inline": "Add a new brand",
+    "edit_brand": "Edit Brand",
+    "no_brands": "No brands yet!",
+    "list_of_brands": "This section will contain the list of brands.",
+    "select_a_brand": "select a brand",
+    "filter_without_brand": "Without brand",
+    "without_brand": "Without brand",
+    "confirm_delete": "Are you sure you want to delete this brand? Reassign or detach its services first if needed.",
+    "created_message": "Brand created successfully",
+    "updated_message": "Brand updated successfully",
+    "deleted_message": "Brand deleted successfully",
+    "brand_attached_message": "A brand cannot be deleted while one or more services still use it."
   },
   "estimates": {
     "title": "अनुमान",

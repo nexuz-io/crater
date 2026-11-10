@@ -282,7 +282,27 @@
     "inactive": "Inattivo",
     "all_statuses": "Tutti gli stati",
     "active_service": "Articolo attivo",
-    "active_service_help": "Gli articoli attivi sono proposti nell'assistente IA."
+    "active_service_help": "Gli articoli attivi sono proposti nell'assistente IA.",
+    "brand": "Marca",
+    "select_a_brand": "seleziona una marca"
+  },
+  "brands": {
+    "title": "Marche",
+    "name": "Marca",
+    "add_brand": "Nuova marca",
+    "add_new_brand": "Aggiungi marca",
+    "add_new_brand_inline": "Aggiungi una nuova marca",
+    "edit_brand": "Modifica marca",
+    "no_brands": "Nessuna marca!",
+    "list_of_brands": "Questa sezione conterrà l'elenco delle marche.",
+    "select_a_brand": "seleziona una marca",
+    "filter_without_brand": "Senza marca",
+    "without_brand": "Senza marca",
+    "confirm_delete": "Eliminare questa marca? Riassegna o scollega prima gli articoli associati.",
+    "created_message": "Marca creata correttamente",
+    "updated_message": "Marca aggiornata",
+    "deleted_message": "Marca eliminata",
+    "brand_attached_message": "Impossibile eliminare una marca mentre è associata ad articoli."
   },
   "estimates": {
     "title": "Preventivi",

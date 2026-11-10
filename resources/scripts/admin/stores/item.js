@@ -15,6 +15,10 @@ export const useItemStore = (useWindow = false) => {
       selectAllField: false,
       selectedItems: [],
       itemUnits: [],
+      // Cached brand catalog for the item form's "Marcar" selector.
+      // Hydrated by `fetchItemBrands`; cleared by `resetCurrentItem`
+      // so a stale company switch never leaks across the form.
+      itemBrands: [],
       currentItemUnit: {
         id: null,
         name: '',
@@ -29,6 +33,8 @@ export const useItemStore = (useWindow = false) => {
         default_quantity: null,
         unit_id: '',
         unit: null,
+        brand_id: null,
+        brand: null,
         taxes: [],
         tax_per_item: false,
         is_active: false,
@@ -49,6 +55,8 @@ export const useItemStore = (useWindow = false) => {
           default_quantity: null,
           unit_id: '',
           unit: null,
+          brand_id: null,
+          brand: null,
           taxes: [],
           is_active: false,
         }
@@ -296,6 +304,27 @@ export const useItemStore = (useWindow = false) => {
             .get(`/api/v1/units`, { params })
             .then((response) => {
               this.itemUnits = response.data.data
+              resolve(response)
+            })
+            .catch((err) => {
+              handleError(err)
+              reject(err)
+            })
+        })
+      },
+
+      // Brands are a per-company catalog; we keep a local copy in the
+      // item store so the form has them available even when the
+      // /admin/brands page has never been visited. Resetting is
+      // handled in resetCurrentItem above on each fresh form open,
+      // and the global company-change handler is responsible for
+      // clearing the catalog when the user switches companies.
+      fetchItemBrands(params) {
+        return new Promise((resolve, reject) => {
+          axios
+            .get(`/api/v1/brands`, { params })
+            .then((response) => {
+              this.itemBrands = response.data.data
               resolve(response)
             })
             .catch((err) => {

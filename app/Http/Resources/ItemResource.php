@@ -24,6 +24,7 @@ class ItemResource extends JsonResource
             'default_quantity' => $this->default_quantity,
             'price' => $this->price,
             'unit_id' => $this->unit_id,
+            'brand_id' => $this->brand_id,
             'company_id' => $this->company_id,
             'creator_id' => $this->creator_id,
             'currency_id' => $this->currency_id,
@@ -34,6 +35,9 @@ class ItemResource extends JsonResource
             'formatted_created_at' => $this->formattedCreatedAt,
             'unit' => $this->when($this->unit()->exists(), function () {
                 return new UnitResource($this->unit);
+            }),
+            'brand' => $this->when($this->brand()->exists(), function () {
+                return new BrandResource($this->brand);
             }),
             'company' => $this->when($this->company()->exists(), function () {
                 return new CompanyResource($this->company);

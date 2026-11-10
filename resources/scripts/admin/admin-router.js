@@ -60,6 +60,9 @@ const ModulesSetting = () =>
 // Items
 const ItemsIndex = () => import('@/scripts/admin/views/items/Index.vue')
 const ItemCreate = () => import('@/scripts/admin/views/items/Create.vue')
+
+// Brands
+const BrandsIndex = () => import('@/scripts/admin/views/brands/Index.vue')
 const CalculatorView = () => import('@/scripts/admin/views/calculator/View.vue')
 const CalculatorSetting = () => import('@/scripts/admin/views/settings/CalculatorSetting.vue')
 const AiAssistantSetting = () =>
@@ -363,6 +366,15 @@ export default [
         name: 'items.edit',
         meta: { ability: abilities.EDIT_ITEM },
         component: ItemCreate,
+      },
+
+      // Brands are managed through their own admin page that anyone
+      // who can view items can browse. Edit / delete are gated by
+      // edit-brand / delete-brand inside the dropdown component.
+      {
+        path: 'brands',
+        meta: { ability: abilities.VIEW_BRAND },
+        component: BrandsIndex,
       },
 
       // Calculators

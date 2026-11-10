@@ -121,6 +121,11 @@ class Company extends Model implements HasMedia
         return $this->hasMany(Unit::class);
     }
 
+    public function brands()
+    {
+        return $this->hasMany(Brand::class);
+    }
+
     public function expenseCategories()
     {
         return $this->hasMany(ExpenseCategory::class);
@@ -353,6 +358,15 @@ class Company extends Model implements HasMedia
 
         if ($this->items()->exists()) {
             $this->items()->delete();
+        }
+
+        // Brands must be removed while no items reference them — the
+        // items.brand_id FK is `restrict` onDelete so deleting through
+        // the `company_id` cascade alone would deadlock in some
+        // engines. Doing it explicitly keeps the order deterministic
+        // across MySQL / SQLite / PostgreSQL deployments.
+        if ($this->brands()->exists()) {
+            $this->brands()->delete();
         }
 
         if ($this->taxTypes()->exists()) {

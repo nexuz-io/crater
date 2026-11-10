@@ -282,7 +282,27 @@
     "inactive": "Inativo",
     "all_statuses": "Todos os estados",
     "active_service": "Artigo ativo",
-    "active_service_help": "Os artigos ativos são propostos no assistente de IA."
+    "active_service_help": "Os artigos ativos são propostos no assistente de IA.",
+    "brand": "Marca",
+    "select_a_brand": "selecione uma marca"
+  },
+  "brands": {
+    "title": "Marcas",
+    "name": "Marca",
+    "add_brand": "Nova marca",
+    "add_new_brand": "Adicionar marca",
+    "add_new_brand_inline": "Adicionar nova marca",
+    "edit_brand": "Editar marca",
+    "no_brands": "Ainda sem marcas!",
+    "list_of_brands": "Esta secção vai conter a lista de marcas.",
+    "select_a_brand": "selecione uma marca",
+    "filter_without_brand": "Sem marca",
+    "without_brand": "Sem marca",
+    "confirm_delete": "Tem a certeza de que pretende eliminar esta marca? Reatribua ou remova primeiro os artigos associados.",
+    "created_message": "Marca criada com sucesso",
+    "updated_message": "Marca atualizada",
+    "deleted_message": "Marca eliminada",
+    "brand_attached_message": "Não pode eliminar uma marca enquanto houver artigos associados."
   },
   "estimates": {
     "title": "Orçamentos",

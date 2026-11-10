@@ -27,6 +27,11 @@ class Item extends Model
         return $this->belongsTo(Unit::class, 'unit_id');
     }
 
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class, 'brand_id');
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class);
@@ -55,6 +60,16 @@ class Item extends Model
     public function scopeWhereUnit($query, $unit_id)
     {
         return $query->where('items.unit_id', $unit_id);
+    }
+
+    public function scopeWhereBrand($query, $brand_id)
+    {
+        return $query->where('items.brand_id', $brand_id);
+    }
+
+    public function scopeWhereWithoutBrand($query)
+    {
+        $query->whereNull('items.brand_id');
     }
 
     public function scopeWhereActive($query, $active = true)
@@ -96,6 +111,16 @@ class Item extends Model
 
         if ($filters->get('item_id')) {
             $query->whereItem($filters->get('item_id'));
+        }
+
+        // brand_id and without_brand are mutually exclusive: the latter
+        // is only honoured when the former is absent. Both must be
+        // wrapped in an OR-aware grouping so they don't escape the
+        // per-company isolation enforced by scopeWhereCompany.
+        if ($filters->get('without_brand') && ! $filters->get('brand_id')) {
+            $query->whereWithoutBrand();
+        } elseif ($filters->get('brand_id')) {
+            $query->whereBrand($filters->get('brand_id'));
         }
 
         if ($filters->get('orderByField') || $filters->get('orderBy')) {
@@ -150,6 +175,10 @@ class Item extends Model
         $data['creator_id'] = Auth::id();
         $company_currency = CompanySetting::getSetting('currency', $request->header('company'));
         $data['currency_id'] = $company_currency;
+
+        // `brand_id` might be present in the request but pointing at a
+        // brand of another company; the request validator already
+        // rejected cross-company ids.
         $item = self::create($data);
 
         if ($request->has('taxes')) {
@@ -161,11 +190,18 @@ class Item extends Model
             }
         }
 
-        $item = self::with('taxes')->find($item->id);
+        $item = self::with(['taxes', 'brand'])->find($item->id);
 
         return $item;
     }
 
+    /**
+     * `$request->validated()` is authoritative: omitted keys are not
+     * touched, and a key explicitly sent as `null` clears the column.
+     * `update()` collapses to `fill()->save()`, so it already gives
+     * us the "omit keeps, null removes" contract required for
+     * `brand_id` and any future optional FK.
+     */
     public function updateItem($request)
     {
         $this->update($request->validated());
@@ -181,6 +217,6 @@ class Item extends Model
             }
         }
 
-        return Item::with('taxes')->find($this->id);
+        return Item::with(['taxes', 'brand'])->find($this->id);
     }
 }

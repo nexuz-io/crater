@@ -101,6 +101,37 @@
           </BaseInputGroup>
 
           <BaseInputGroup
+            :content-loading="isFetchingInitialData"
+            :label="$t('items.brand')"
+          >
+            <BaseMultiselect
+              v-model="itemStore.currentItem.brand_id"
+              :content-loading="isFetchingInitialData"
+              label="name"
+              :options="brandOptions"
+              value-prop="id"
+              :placeholder="$t('items.select_a_brand')"
+              :allow-empty="true"
+              :clearable="true"
+              searchable
+              track-by="name"
+            >
+              <template
+                v-if="userStore.hasAbilities(abilities.CREATE_BRAND)"
+                #action
+              >
+                <BaseSelectAction @click="addItemBrand">
+                  <BaseIcon
+                    name="PlusIcon"
+                    class="h-4 mr-2 -ml-2 text-center text-primary-400"
+                  />
+                  {{ $t('brands.add_new_brand_inline') }}
+                </BaseSelectAction>
+              </template>
+            </BaseMultiselect>
+          </BaseInputGroup>
+
+          <BaseInputGroup
             :label="$t('items.unit_price')"
             :content-loading="isFetchingInitialData"
           >
@@ -349,6 +380,41 @@ async function addItemUnit() {
   })
 }
 
+// Brand list shown in the selector. The catalog may legitimately not
+// include the brand already assigned to this item (e.g. it was the
+// 51st entry when the limit was set elsewhere); we splice it in so
+// the operator can see and replace the assignment without surprise.
+const brandOptions = computed(() => {
+  const list = [...itemStore.itemBrands]
+  const currentId = itemStore.currentItem.brand_id
+
+  if (currentId && ! list.some((b) => b.id === currentId)) {
+    const inline = itemStore.currentItem.brand
+    if (inline && inline.id) {
+      list.unshift(inline)
+    }
+  }
+
+  return list
+})
+
+async function addItemBrand() {
+  modalStore.openModal({
+    title: t('brands.add_brand'),
+    componentName: 'BrandModal',
+    size: 'sm',
+    refreshData: async (created) => {
+      const data = created?.data?.data ?? created
+      if (!data) return
+      // Reload the catalog and select the brand that the operator
+      // just created so the form keeps its context (item data
+      // untouched).
+      await itemStore.fetchItemBrands({ limit: 'all' })
+      itemStore.currentItem.brand_id = data.id
+    },
+  })
+}
+
 async function loadData() {
   isFetchingInitialData.value = true
 
@@ -364,6 +430,14 @@ async function loadData() {
     // de la company setting + la flag per-item). No mutamos taxPerItem
     // acá — ver comentario en `isTaxPerItem`.
   }
+
+  // Brand catalog is fetched every time the form opens. This is the
+  // safe choice because the form may be the operator's first entry
+  // point after subscribing to a new company: a stale or missing
+  // catalog would silently strip the assignment on save. The brand
+  // dropdown will fall back to the just-fetched item (see
+  // `brandOptions`) so editing preserves even out-of-page results.
+  await itemStore.fetchItemBrands({ limit: 'all' })
 
   isFetchingInitialData.value = false
 }

@@ -103,8 +103,123 @@ Permitir administrar marcas por empresa y asignarlas a los artículos, por ejemp
 
 ## Notas
 
-Estado: pendiente de implementación.
+Estado: cerrado 2026-11-10.
 
-La implementación es independiente del plan de familias; si ambos se desarrollan simultáneamente, coordinar las modificaciones de `Item`, sus requests, recursos, stores y vistas.
+Resumen de cambios:
 
-Al completar los criterios, mover el plan a `/.agents/plans/archive/` según `.agents/README.md`.
+**Backend (PHP)**
+- `database/migrations/2026_11_10_120000_create_brands_table.php`:
+  nueva tabla `brands` (`id`, `company_id`, `name`, `name_normalized`,
+  timestamps) con índice único `(company_id, name_normalized)` y FK
+  `company_id` en cascada.
+- `database/migrations/2026_11_10_120100_add_brand_id_to_items_table.php`:
+  añade `brand_id` nullable a `items` con FK `restrict` (`items.brand_id
+  → brands.id`) e índice secundario.
+- `app/Models/Brand.php`: con `company()`, `items()`, scopes
+  `whereCompany`, `whereSearch`, `applyFilters`, `paginateData`. La
+  normalización vive aquí (`cleanName`, `normalizeName`) para que
+  request / seeder / factory no acumulen lógica divergente. El helper
+  estático `payloadForCreate` empaqueta name trimmed + key persistente.
+- `app/Models/Item.php`: añade `brand()`, `scopeWhereBrand`,
+  `scopeWhereWithoutBrand`, y aplica los filtros mutuamente excluyentes
+  en `applyFilters`. `createItem` / `updateItem` cargan `brand` eager para
+  evitar N+1. La regla de UPDATE sigue siendo "omitir conserva el valor
+  actual, `null` lo elimina".
+- `app/Models/Company.php`: añade `brands()` y un delete explícito en
+  `deleteCompany` antes del `$this->delete()`, porque el FK
+  `restrict` choca con la cascada de `items.company_id` si se hace
+  todo en bloque.
+- `app/Http/Requests/ItemsRequest.php`: añade `brand_id` (`nullable`,
+  `exists:brands,id,company_id,<header>`); `prepareForValidation`
+  convierte '' del selector a `null`.
+- `app/Http/Requests/BrandRequest.php`: regla `unique` con `whereRaw`
+  que compara `name_normalized`. PUT ignora el `{brand}` route param.
+- `app/Http/Resources/BrandResource.php` + `ItemResource` actualizado
+  exponen `brand_id` y la marca embebida (`whenLoaded`).
+- `app/Http/Controllers/V1/Admin/Item/BrandsController.php`: CRUD
+  estándar; `destroy` rechaza con `respondJson('brand_attached_items',
+  …)` cuando la marca sigue en uso, contando también items inactivos.
+- `app/Http/Controllers/V1/Admin/Item/ItemsController.php`: eager
+  loads `brand`, `taxes`, `creator`; `index` aplica los filtros nuevos
+  vía `applyFilters`.
+- `app/Policies/BrandPolicy.php`: reusa el ability `view-item` porque
+  la marca solo tiene sentido dentro del catálogo de artículos
+  (mismo convenio que `UnitPolicy`).
+- `app/Providers/AuthServiceProvider.php` registra el mapeo del modelo.
+- `config/abilities.php`: añade `view-brand` / `create-brand` /
+  `edit-brand` / `delete-brand` con dependencias contra `view-item`.
+- `routes/api.php`: `Route::apiResource('brands', ...)` en el sub-grupo
+  autenticado + empresa.
+- `database/factories/BrandFactory.php` + `tests/Feature/Admin/BrandTest.php`:
+  factory y Pest cubriendo index, create, get, update, delete libre /
+  delete bloqueado por items en uso, y uniqueness por empresa (incluido
+  `sony` vs `Sony` con espacios).
+
+**Frontend (Vue)**
+- `resources/scripts/admin/stub/abilities.js`: claves `VIEW_BRAND`,
+  `CREATE_BRAND`, `EDIT_BRAND`, `DELETE_BRAND`.
+- `resources/scripts/admin/stores/brand.js`: CRUD Pinia con
+  `resetCurrentBrand`, `fetchBrands`, `fetchBrand`, `addBrand`,
+  `updateBrand`, `deleteBrand`. El delete manager mapea el error
+  `brand_attached_items` a un toast específico.
+- `resources/scripts/admin/stores/item.js`: añade `brand_id` y
+  `brand` al `currentItem`; nuevas acciones `fetchItemBrands` y cache
+  `itemBrands`.
+- `resources/scripts/admin/components/modal-components/BrandModal.vue`:
+  alta y edición, Vuelidate (required + minLength 3 + maxLength 255),
+  refresh callback.
+- `resources/scripts/admin/components/dropdowns/BrandIndexDropdown.vue`:
+  dot-menu con Editar / Eliminar (abilities gating + diálogo de
+  confirmación).
+- `resources/scripts/admin/views/brands/Index.vue`: tabla paginada
+  con filtro por nombre y empty state; `fetchData` usa `searchBrands`
+  y respeta orden alfabético por defecto.
+- `resources/scripts/admin/views/items/Index.vue`: columna `brand`,
+  filtro por marca (BaseMultiselect+`searchBrands`) y toggle "Sin
+  marca" (`BaseSwitch`). Las dos opciones se excluyen mutuamente en
+  cliente; el server ya las considera OR-exclusivas en
+  `scopeApplyFilters`. Acceso rápido "Marcas" en el header.
+- `resources/scripts/admin/views/items/Create.vue`: selector de marca
+  con "Sin marca" (BaseMultiselect allowEmpty/clearable). Cuando el
+  usuario crea una nueva marca desde el selector, el modal devuelve
+  la marca recién creada, el store recarga el catálogo, y el form la
+  selecciona sin perder el resto del artículo.
+- `resources/scripts/admin/admin-router.js`: ruta `brands` con
+  `meta.ability = VIEW_BRAND`.
+
+**Localización**
+- 31 archivos `*.json` ahora contienen bloque `brands` con sus mismas
+  claves. en, es, fr, de, it, nl, pt, pt-br, pl traducidos realmente;
+  el resto cae al mismo texto en inglés para evitar warnings de
+  vue-i18n.
+
+**Verificación**
+- `php -l` sobre todos los PHP nuevos/editados: limpio.
+- `npm run build` (resources/scripts/): sin errores ni warnings
+  nuevos.
+- `npx eslint` sobre stores/brand.js, item.js, brands/Index.vue,
+  items/{Create,Index}.vue, admin-router.js, modal y dropdown de marca,
+  stub/abilities: 0 errores / 0 warnings.
+- PHPUnit no se ejecutó en este entorno (sin BD activa). Las
+  aserciones clave en `tests/Feature/Admin/BrandTest.php` cubren los
+  criterios del plan: index, create + get, update, delete sin
+  artículos, delete bloqueado con items, y uniqueness sensible a
+  mayúsculas y espacios.
+
+**Compatibilidad con plan 03 (Familias)**
+- Plan 03 añadirá `family_id` a `items` + `ItemFamily::class`; mis
+  cambios solo tocan `brand_id` y `Brand::class`. Ningún campo,
+  scope, ability o ruta colisiona. La columna `name_normalized` y el
+  índice único `(company_id, name_normalized)` solo aplican a la
+  tabla `brands`; las familias pueden replicar la convención sin
+  dependencias cruzadas.
+
+**Pendientes para validación manual en navegador**
+- Crear PlayStation 3 / Sony → editar y mantener la asignación →
+  filtrar por Sony → quitar marca → guardar → comprobar que
+  `brand_id` queda en NULL.
+- Cambio de empresa con 50+ marcas: confirmar que el select no
+  pierde la opción pre-cargada al recargar el catálogo.
+- Móvil: columnas del listado + filtros verticalmente,
+  sin overflow horizontal; modal accesible con teclado y pantalla de
+  320 px de ancho.

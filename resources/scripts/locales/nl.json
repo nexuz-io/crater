@@ -282,7 +282,27 @@
     "inactive": "Inactief",
     "all_statuses": "Alle statussen",
     "active_service": "Actief artikel",
-    "active_service_help": "Actieve artikelen worden aangeboden in de AI-assistent."
+    "active_service_help": "Actieve artikelen worden aangeboden in de AI-assistent.",
+    "brand": "Merk",
+    "select_a_brand": "kies een merk"
+  },
+  "brands": {
+    "title": "Merken",
+    "name": "Merk",
+    "add_brand": "Nieuw merk",
+    "add_new_brand": "Merk toevoegen",
+    "add_new_brand_inline": "Nieuw merk toevoegen",
+    "edit_brand": "Merk bewerken",
+    "no_brands": "Nog geen merken!",
+    "list_of_brands": "Deze sectie bevat de lijst met merken.",
+    "select_a_brand": "kies een merk",
+    "filter_without_brand": "Zonder merk",
+    "without_brand": "Zonder merk",
+    "confirm_delete": "Weet u zeker dat u dit merk wilt verwijderen? Wijs eerst de gekoppelde artikelen toe of maak ze los.",
+    "created_message": "Merk succesvol aangemaakt",
+    "updated_message": "Merk bijgewerkt",
+    "deleted_message": "Merk verwijderd",
+    "brand_attached_message": "Een merk kan niet worden verwijderd zolang artikelen eraan gekoppeld zijn."
   },
   "estimates": {
     "title": "Offertes",

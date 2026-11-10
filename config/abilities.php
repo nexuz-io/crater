@@ -1,5 +1,6 @@
 <?php
 
+use Crater\Models\Brand;
 use Crater\Models\Calculator;
 use Crater\Models\Customer;
 use Crater\Models\CustomField;
@@ -78,6 +79,43 @@ return [
             "model" => Item::class,
             "depends_on" => [
                 'view-item',
+            ]
+        ],
+
+        // Brand: a flat per-company catalog of manufacturers that
+        // service items can be assigned to. Visibility is gated on the
+        // existing "view item" ability because brands have no meaning
+        // outside the article catalog.
+        [
+            "name" => "view brand",
+            "ability" => "view-brand",
+            "model" => Brand::class,
+            "depends_on" => [
+                'view-item',
+            ]
+        ],
+        [
+            "name" => "create brand",
+            "ability" => "create-brand",
+            "model" => Brand::class,
+            "depends_on" => [
+                'view-brand',
+            ]
+        ],
+        [
+            "name" => "edit brand",
+            "ability" => "edit-brand",
+            "model" => Brand::class,
+            "depends_on" => [
+                'view-brand',
+            ]
+        ],
+        [
+            "name" => "delete brand",
+            "ability" => "delete-brand",
+            "model" => Brand::class,
+            "depends_on" => [
+                'view-brand',
             ]
         ],
 

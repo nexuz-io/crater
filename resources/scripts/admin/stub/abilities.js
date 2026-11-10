@@ -13,6 +13,13 @@ export default {
   EDIT_ITEM: 'edit-item',
   VIEW_ITEM: 'view-item',
 
+  // Brands (article manufacturers / trademarks). Mirrors the
+  // view-item / create-item / edit-item / delete-item contract.
+  CREATE_BRAND: 'create-brand',
+  DELETE_BRAND: 'delete-brand',
+  EDIT_BRAND: 'edit-brand',
+  VIEW_BRAND: 'view-brand',
+
   // Tax Types
   CREATE_TAX_TYPE: 'create-tax-type',
   DELETE_TAX_TYPE: 'delete-tax-type',

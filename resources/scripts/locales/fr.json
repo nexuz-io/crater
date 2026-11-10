@@ -370,7 +370,27 @@
     "inactive": "Inactif",
     "all_statuses": "Tous les statuts",
     "active_service": "Article actif",
-    "active_service_help": "Les articles actifs sont proposés dans l'assistant IA."
+    "active_service_help": "Les articles actifs sont proposés dans l'assistant IA.",
+    "brand": "Marque",
+    "select_a_brand": "choisir une marque"
+  },
+  "brands": {
+    "title": "Marques",
+    "name": "Marque",
+    "add_brand": "Nouvelle marque",
+    "add_new_brand": "Ajouter une marque",
+    "add_new_brand_inline": "Ajouter une nouvelle marque",
+    "edit_brand": "Modifier la marque",
+    "no_brands": "Aucune marque",
+    "list_of_brands": "Cette section affichera la liste des marques.",
+    "select_a_brand": "choisir une marque",
+    "filter_without_brand": "Sans marque",
+    "without_brand": "Sans marque",
+    "confirm_delete": "Voulez-vous vraiment supprimer cette marque ? Réassignez ou détachez d'abord les articles qui l'utilisent.",
+    "created_message": "Marque créée",
+    "updated_message": "Marque mise à jour",
+    "deleted_message": "Marque supprimée",
+    "brand_attached_message": "Impossible de supprimer une marque tant qu'un article s'y réfère."
   },
   "estimates": {
     "mark_as": "Marquer comme",

@@ -282,7 +282,27 @@
     "inactive": "Nieaktywny",
     "all_statuses": "Wszystkie statusy",
     "active_service": "Aktywny produkt",
-    "active_service_help": "Aktywne produkty są oferowane w asystencie AI."
+    "active_service_help": "Aktywne produkty są oferowane w asystencie AI.",
+    "brand": "Marka",
+    "select_a_brand": "wybierz markę"
+  },
+  "brands": {
+    "title": "Marki",
+    "name": "Marka",
+    "add_brand": "Nowa marka",
+    "add_new_brand": "Dodaj markę",
+    "add_new_brand_inline": "Dodaj nową markę",
+    "edit_brand": "Edytuj markę",
+    "no_brands": "Brak marek!",
+    "list_of_brands": "Ta sekcja zawiera listę marek.",
+    "select_a_brand": "wybierz markę",
+    "filter_without_brand": "Bez marki",
+    "without_brand": "Bez marki",
+    "confirm_delete": "Czy na pewno chcesz usunąć tę markę? Najpierw przypisz lub odłącz artykuły, które jej używają.",
+    "created_message": "Marka została utworzona",
+    "updated_message": "Marka zaktualizowana",
+    "deleted_message": "Marka usunięta",
+    "brand_attached_message": "Nie można usunąć marki, dopóki jest używana przez artykuły."
   },
   "estimates": {
     "title": "Oferty",
