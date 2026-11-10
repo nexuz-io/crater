@@ -15,7 +15,9 @@ class FinishController extends Controller
      */
     public function __invoke(Request $request)
     {
-        \Storage::disk('local')->put('database_created', 'database_created');
+        if (! database_is_ready()) {
+            return response()->json(['message' => 'Database installation is incomplete.'], 422);
+        }
 
         return response()->json(['success' => true]);
     }

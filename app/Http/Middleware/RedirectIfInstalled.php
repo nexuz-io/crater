@@ -16,7 +16,7 @@ class RedirectIfInstalled
      */
     public function handle($request, Closure $next)
     {
-        if (\Storage::disk('local')->has('database_created')) {
+        if (database_is_ready()) {
             if (Setting::getSetting('profile_complete') === 'COMPLETED') {
                 return redirect('login');
             }

@@ -13,7 +13,7 @@ class DatabaseConfigurationController extends Controller
     /**
      * @var EnvironmentManager
      */
-    protected $EnvironmentManager;
+    protected $environmentManager;
 
     /**
      * @param EnvironmentManager $environmentManager
@@ -30,17 +30,35 @@ class DatabaseConfigurationController extends Controller
     public function saveDatabaseEnvironment(DatabaseEnvironmentRequest $request)
     {
         Artisan::call('config:clear');
-        Artisan::call('cache:clear');
 
         $results = $this->environmentManager->saveDatabaseVariables($request);
 
-        if (array_key_exists("success", $results)) {
-            Artisan::call('key:generate --force');
-            Artisan::call('optimize:clear');
-            Artisan::call('config:clear');
-            Artisan::call('cache:clear');
-            Artisan::call('storage:link');
-            Artisan::call('migrate --seed --force');
+        if (! empty($results['success'])) {
+            \Storage::disk('local')->delete('database_created');
+
+            try {
+                if (! config('app.key') && Artisan::call('key:generate', ['--force' => true]) !== 0) {
+                    throw new \RuntimeException('Unable to generate the application key.');
+                }
+
+                Artisan::call('config:clear');
+                Artisan::call('storage:link');
+
+                if (Artisan::call('migrate', ['--seed' => true, '--force' => true]) !== 0) {
+                    \Log::error('Installation migrations failed.', ['output' => Artisan::output()]);
+                    throw new \RuntimeException('Database migrations failed.');
+                }
+
+                if (! \Storage::disk('local')->put('database_created', 'database_created')) {
+                    throw new \RuntimeException('Unable to save the installation marker.');
+                }
+            } catch (\Throwable $e) {
+                report($e);
+
+                return response()->json([
+                    'error_message' => 'Database installation failed. Check storage/logs/laravel.log before retrying.',
+                ]);
+            }
         }
 
         return response()->json($results);

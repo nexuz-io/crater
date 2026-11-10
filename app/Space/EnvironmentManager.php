@@ -144,7 +144,6 @@ class EnvironmentManager
         $connection = $request->database_connection;
 
         $settings = config("database.connections.$connection");
-        $settings = config("database.connections.$connection");
 
         $connectionArray = array_merge($settings, [
             'driver' => $connection,
@@ -161,12 +160,11 @@ class EnvironmentManager
         }
 
         config([
-            'database' => [
-                'migrations' => 'migrations',
-                'default' => $connection,
-                'connections' => [$connection => $connectionArray],
-            ],
+            'database.default' => $connection,
+            "database.connections.$connection" => $connectionArray,
         ]);
+
+        DB::purge($connection);
 
         return DB::connection()->getPdo();
     }

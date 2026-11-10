@@ -48,14 +48,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Web group
-        $middleware->web(append: [
-            \Crater\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            // \Illuminate\Session\Middleware\AuthenticateSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Crater\Http\Middleware\VerifyCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        $middleware->web(replace: [
+            \Illuminate\Cookie\Middleware\EncryptCookies::class => \Crater\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class => \Crater\Http\Middleware\VerifyCsrfToken::class,
         ]);
 
         // API group
@@ -82,7 +77,7 @@ return Application::configure(basePath: dirname(__DIR__))
         \Crater\Console\Commands\InstallModuleCommand::class,
     ])
     ->withSchedule(function (Schedule $schedule) {
-        if (\Storage::disk('local')->has('database_created') && config('database.default') !== 'sqlite' && ! app()->runningUnitTests()) {
+        if (database_is_ready() && config('database.default') !== 'sqlite' && ! app()->runningUnitTests()) {
             $schedule->command('check:invoices:status')->daily();
             $schedule->command('check:estimates:status')->daily();
 

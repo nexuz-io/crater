@@ -1543,7 +1543,8 @@
       "app_domain": "App Domain",
       "verify_now": "Verify Now",
       "success": "Domain Verify Successfully.",
-      "failed": "Domain verification failed. Please enter valid domain name.",
+      "failed": "Domain or session verification failed. Check the domain and the failed request in your browser's Network tab.",
+      "headers_too_large": "The server rejected oversized headers or cookies. Clear this site's cookies and retry. If it persists, check the session driver and the proxy's header limits.",
       "verify_and_continue": "Verify And Continue"
     },
     "mail": {

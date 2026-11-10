@@ -25,7 +25,7 @@ class ViewServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (\Storage::disk('local')->has('database_created') && Schema::hasTable('settings')) {
+        if (database_is_ready() && Schema::hasTable('settings')) {
             View::share('login_page_logo', get_app_setting('login_page_logo'));
             View::share('login_page_heading', get_app_setting('login_page_heading'));
             View::share('login_page_description', get_app_setting('login_page_description'));

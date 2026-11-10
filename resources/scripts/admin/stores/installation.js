@@ -136,23 +136,11 @@ export const useInstallationStore = (useWindow = false) => {
         })
       },
 
-      installationLogin() {
-        return new Promise((resolve, reject) => {
-          axios.get('/sanctum/csrf-cookie').then((response) => {
-            if (response) {
-              axios
-                .post('/api/v1/installation/login')
-                .then((response) => {
-                  companyStore.setSelectedCompany(response.data.company)
-                  resolve(response)
-                })
-                .catch((err) => {
-                  handleError(err)
-                  reject(err)
-                })
-            }
-          })
-        })
+      async installationLogin() {
+        await axios.get('/sanctum/csrf-cookie')
+        const response = await axios.post('/api/v1/installation/login')
+        companyStore.setSelectedCompany(response.data.company)
+        return response
       },
 
       checkAutheticated() {

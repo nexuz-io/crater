@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiting();
 
-        if (\Storage::disk('local')->has('database_created') && Schema::hasTable('abilities')) {
+        if (database_is_ready() && Schema::hasTable('abilities')) {
             $this->addMenus();
         }
     }

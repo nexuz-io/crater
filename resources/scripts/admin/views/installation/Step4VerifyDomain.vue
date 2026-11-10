@@ -97,9 +97,16 @@ async function verifyDomain() {
 
     isSaving.value = false
   } catch (e) {
+    const response = e.response
+    const oversizedHeaders = response?.status === 431 ||
+      (response?.status === 400 && typeof response.data === 'string' &&
+        /request header or cookie too large|request header fields too large/i.test(response.data))
+
     notificationStore.showNotification({
       type: 'error',
-      message: t('wizard.verify_domain.failed'),
+      message: t(oversizedHeaders
+        ? 'wizard.verify_domain.headers_too_large'
+        : 'wizard.verify_domain.failed'),
     })
 
     isSaving.value = false

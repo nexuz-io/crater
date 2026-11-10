@@ -1395,7 +1395,8 @@
       "app_domain": "Dominio de aplicación",
       "verify_now": "Verificar ahora",
       "success": "Dominio verificado correctamente.",
-      "failed": "La verificación del dominio falló. Ingrese un nombre de dominio válido.",
+      "failed": "Falló la verificación del dominio o de la sesión. Revisa el dominio y la petición fallida en la pestaña Red del navegador.",
+      "headers_too_large": "El servidor rechazó cabeceras o cookies demasiado grandes. Borra las cookies de este sitio y reintenta. Si persiste, revisa el controlador de sesiones y los límites de cabeceras del proxy.",
       "verify_and_continue": "Verificar y continuar"
     },
     "mail": {

@@ -21,8 +21,8 @@ class AppDomainController extends Controller
 
         $results = $environmentManager->saveDomainVariables($request);
 
-        if (in_array('error', $results)) {
-            return response()->json($results);
+        if (isset($results['error'])) {
+            return response()->json($results, 422);
         }
 
         return response()->json([

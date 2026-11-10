@@ -7,6 +7,28 @@ use Crater\Models\Setting;
 use Illuminate\Support\Str;
 
 /**
+ * A leftover installation marker does not guarantee a usable database.
+ */
+function database_is_ready()
+{
+    if (! \Storage::disk('local')->has('database_created')) {
+        return false;
+    }
+
+    try {
+        foreach (['settings', 'file_disks', 'users'] as $table) {
+            if (! \Schema::hasTable($table)) {
+                return false;
+            }
+        }
+    } catch (\Illuminate\Database\QueryException $e) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Get company setting
  *
  * @param $company_id
@@ -14,7 +36,7 @@ use Illuminate\Support\Str;
  */
 function get_company_setting($key, $company_id)
 {
-    if (\Storage::disk('local')->has('database_created')) {
+    if (database_is_ready()) {
         return CompanySetting::getSetting($key, $company_id);
     }
 }
@@ -27,7 +49,7 @@ function get_company_setting($key, $company_id)
  */
 function get_app_setting($key)
 {
-    if (\Storage::disk('local')->has('database_created')) {
+    if (database_is_ready()) {
         return Setting::getSetting($key);
     }
 }
@@ -45,7 +67,7 @@ function get_page_title($company_id)
     $pageTitle = null;
     $defaultPageTitle = 'Crater - Self Hosted Invoicing Platform';
 
-    if (\Storage::disk('local')->has('database_created')) {
+    if (database_is_ready()) {
         if ($routeName === 'customer.dashboard') {
             $pageTitle = CompanySetting::getSetting('customer_portal_page_title', $company_id);
 

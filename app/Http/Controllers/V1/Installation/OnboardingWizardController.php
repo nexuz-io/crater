@@ -16,7 +16,7 @@ class OnboardingWizardController extends Controller
      */
     public function getStep(Request $request)
     {
-        if (! \Storage::disk('local')->has('database_created')) {
+        if (! database_is_ready()) {
             return response()->json([
                 'profile_complete' => 0,
             ]);
@@ -29,6 +29,10 @@ class OnboardingWizardController extends Controller
 
     public function updateStep(Request $request)
     {
+        if (! database_is_ready()) {
+            return response()->json(['message' => 'Database installation is incomplete.'], 422);
+        }
+
         $setting = Setting::getSetting('profile_complete');
 
         if ($setting === 'COMPLETED') {

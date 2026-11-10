@@ -1543,7 +1543,8 @@
       "app_domain": "Domaine de l'application",
       "verify_now": "Vérifier maintenant",
       "success": "Vérification du domaine réussie.",
-      "failed": "La vérification du domaine a échoué. Veuillez entrer un nom de domaine valide.",
+      "failed": "La vérification du domaine ou de la session a échoué. Vérifiez le domaine et la requête en échec dans l’onglet Réseau du navigateur.",
+      "headers_too_large": "Le serveur a rejeté des en-têtes ou cookies trop volumineux. Supprimez les cookies de ce site puis réessayez. Si le problème persiste, vérifiez le pilote de session et les limites du proxy.",
       "verify_and_continue": "Vérifier et continuer"
     },
     "mail": {
