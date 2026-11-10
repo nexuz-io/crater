@@ -39,13 +39,25 @@ export default class Crater {
     app.provide('$utils', utils)
 
     const i18n = createI18n({
+      legacy: false,
       locale: 'en',
       fallbackLocale: 'en',
       globalInjection: true,
-      // Script setup calls useI18n() while $t stays on the legacy global.
-      allowComposition: true,
       messages: this.messages,
     })
+
+    // Templates and stores still call $tc / global.tc. Composition mode
+    // only exposes t(), which accepts the plural count as the second arg.
+    const tc = (key, choice, values) => {
+      if (typeof choice === 'number') {
+        return values === undefined
+          ? i18n.global.t(key, choice)
+          : i18n.global.t(key, values, choice)
+      }
+
+      return choice === undefined ? i18n.global.t(key) : i18n.global.t(key, choice)
+    }
+    i18n.global.tc = tc
 
     window.i18n = i18n
 
@@ -54,6 +66,7 @@ export default class Crater {
     app.use(router)
     app.use(Maska)
     app.use(i18n)
+    app.config.globalProperties.$tc = tc
     app.use(createPinia())
     app.provide('utils', utils)
     app.directive('tooltip', VTooltip)
