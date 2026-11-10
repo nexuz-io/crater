@@ -25,9 +25,30 @@ Homestead.yaml
 /storage/fonts/*.ufm.json
 /storage/fonts/installed-fonts.json
 
-# Local agent workspace plans (opencode/Copilot/Claude sessions, etc.)
-# Each developer keeps their own working notes here; never committed.
-/.agents/
+# Local agent workspace. The folder itself IS tracked (README, TEMPLATE,
+# HOWTO-*, and individual plans/<NN>-*.md are shared documentation) but
+# the per-developer working artifacts inside are not.
+#
+# Shared, tracked:  /agents/{README,TEMPLATE,HOWTO-*}.md
+#                   /agents/plans/<NN>-<topic>.md       (1 plan per objective)
+#
+# Personal, ignored:  audit-* / build-csv.js / emit-md.js / apply-*-js
+#                     inside .agents/plans/ are scratch tooling and never
+#                     land in the repo.
+# Per-developer working artifacts inside .agents/plans/ stay local:
+# audit-*, build-csv.js, emit-md.js, apply-items-terms.js, etc.
+# Anything not matching these is treated as shared docs and is tracked.
+# (Listed individually because gitignore doesn't expand `*.{js,csv}`.)
+/.agents/plans/audit-items.csv
+/.agents/plans/audit-items.js
+/.agents/plans/audit-items.json
+/.agents/plans/audit-items.md
+/.agents/plans/audit-items2.js
+/.agents/plans/audit-presence.csv
+/.agents/plans/build-csv.js
+/.agents/plans/emit-md.js
+/.agents/plans/apply-items-terms.js
+/.agents/plans/apply-*.js
 .DS_Store
 
 # Frontend assets are built in CI and uploaded to the droplet
