@@ -167,6 +167,14 @@
           :title="$t('settings.preferences.discount_per_item')"
           :description="$t('settings.preferences.discount_setting_description')"
         />
+
+        <BaseDivider class="mt-6 mb-2" />
+
+        <BaseSwitchSection
+          v-model="taxPerItemField"
+          :title="$t('settings.preferences.tax_per_item')"
+          :description="$t('settings.preferences.tax_setting_description')"
+        />
       </ul>
     </BaseSettingCard>
   </form>
@@ -224,6 +232,28 @@ const discountPerItemField = computed({
     }
 
     settingsForm.discount_per_item = value
+
+    await companyStore.updateCompanySettings({
+      data,
+      message: 'general.setting_updated',
+    })
+  },
+})
+
+const taxPerItemField = computed({
+  get: () => {
+    return settingsForm.tax_per_item === 'YES'
+  },
+  set: async (newValue) => {
+    const value = newValue ? 'YES' : 'NO'
+
+    let data = {
+      settings: {
+        tax_per_item: value,
+      },
+    }
+
+    settingsForm.tax_per_item = value
 
     await companyStore.updateCompanySettings({
       data,
