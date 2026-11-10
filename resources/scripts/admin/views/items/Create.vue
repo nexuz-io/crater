@@ -287,7 +287,19 @@ const getTaxTypes = computed(() => {
   })
 })
 
-const isTaxPerItem = computed(() => taxPerItem.value === 'YES')
+const isTaxPerItem = computed(() => {
+  // 1) Company policy wins: when the owner enabled "Tax Per Service" in
+  //    Settings → Preferences, every item shows the Taxes multiselect —
+  //    even articles that pre-date the toggle and have tax_per_item = 0
+  //    in the DB.
+  if (taxPerItem.value === 'YES') return true
+
+  // 2) Backward compatibility: articles that already had taxes configured
+  //    before the company-wide toggle existed keep showing the field so
+  //    users can still edit them. (The 2021 migration marks tax_per_item=1
+  //    only on items that already had taxes at that time.)
+  return itemStore.currentItem.tax_per_item === 1
+})
 
 const rules = computed(() => {
   return {
@@ -348,9 +360,9 @@ async function loadData() {
   if (isEdit.value) {
     let id = route.params.id
     await itemStore.fetchItem(id)
-    itemStore.currentItem.tax_per_item === 1
-      ? (taxPerItem.value = 'YES')
-      : (taxPerItem.value = 'NO')
+    // Tax display policy is now fully driven by `isTaxPerItem` (unión
+    // de la company setting + la flag per-item). No mutamos taxPerItem
+    // acá — ver comentario en `isTaxPerItem`.
   }
 
   isFetchingInitialData.value = false
