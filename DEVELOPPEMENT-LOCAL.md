@@ -5,9 +5,9 @@
 
 ## Stack
 
-- Backend : Laravel 8 (PHP 8.1), base MariaDB
-- Frontend : Vue 3 + Vite 2 (paquet `laravel-vite` / `innocenzi/laravel-vite`)
-- Infra locale : Docker Compose (services `app`, `nginx`, `db`, `cron`)
+- Backend : Laravel 13 (PHP 8.4), base MariaDB ou SQLite
+- Frontend : Vue 3 + Vite 2 (paquet `laravel-vite` côté JS)
+- Infra locale : PHP installé sur la machine hôte (`php`, `composer`). Docker n'est plus utilisé (le repo `crater-docker` est séparé si on en a besoin).
 
 ## Règle n°1 : pas de serveur de dev Vite
 
@@ -15,29 +15,28 @@ L'application sert les assets **pré-construits** depuis `public/build` (via le 
 Il n'y a **pas** de flux `npm run dev` à utiliser. Pour voir une modification frontend :
 
 1. Rebuild du frontend (voir ci-dessous) ;
-2. Rechargement de la page sur `http://localhost` (nginx du Docker Compose).
+2. Rechargement de la page sur `http://localhost:8000` (port par défaut de `php artisan serve`).
 
 ## Environnement local
 
-- Tout tourne via Docker Compose : `docker compose up -d` puis `http://localhost`.
-- **PHP n'est PAS installé sur la machine hôte.** Toute commande artisan passe par le conteneur :
-  ```bash
-  docker compose exec -T app php artisan <commande>
-  ```
-- Base de données : conteneur `db` (MariaDB), port hôte 33006.
+- PHP 8.4 (ou 8.3) doit être disponible en ligne de commande. Sur macOS, [Herd](https://herd.laravel.com/) ou [Valet](https://laravel.com/docs/valet) ;
+  sur Linux, le paquet de la distro ; sur Windows, Laragon ou WSL.
+- Composer 2.x : `composer --version` doit répondre.
+- Démarrage : `cd C:\www\crater && php artisan serve` puis ouvrir
+  `http://127.0.0.1:8000`. Si la base n'est pas configurée, copier
+  `.env.example` en `.env` et lancer `php artisan key:generate`.
+- Pour MariaDB en local : la plupart des distributions (Herd, Laragon, XAMPP)
+  démarrent MySQL/MariaDB automatiquement ; sinon la base SQLite
+  (`database/database.sqlite`) suffit pour le développement.
 
 ## Rebuild du frontend (nécessaire après toute modif JS/CSS)
 
 Le frontend se build avec **yarn** (le `yarn.lock` fait foi ; le `package-lock.json` présent est obsolète — ne pas utiliser `npm ci`, il échoue avec des erreurs ERESOLVE/lockfile incohérent).
 
-Le build appelle `php artisan vite:config` pour découvrir les entrypoints, donc il a besoin de PHP.
-Sur l'hôte où PHP est absent, utiliser un shim qui délègue au conteneur :
+Le build appelle `php artisan vite:config` pour découvrir les entrypoints, donc il a besoin de PHP disponible directement (plus de shim Docker) :
 
 ```bash
-mkdir -p /tmp/phpshim
-printf '#!/bin/sh\ndocker compose -f /chemin/vers/crater/docker-compose.yml exec -T app php "$@"\n' > /tmp/phpshim/php
-chmod +x /tmp/phpshim/php
-PATH="/tmp/phpshim:$PATH" yarn build   # ou: npm run build
+yarn build   # ou: npm run build
 ```
 
 Astuce environnement : Node 16 est la version sûre pour Vite 2 (les versions récentes peuvent produire des chunks différents).
@@ -54,10 +53,11 @@ Astuce environnement : Node 16 est la version sûre pour Vite 2 (les versions r�
 
 ## Déploiement prod (automatique)
 
-- `public/build` n'est **pas versionné** dans git. À chaque push sur `master`, le workflow
+- `public/build` n'est **pas versionné** dans git. À chaque push sur `main`, le workflow
   `.github/workflows/deploy.yml` : build du frontend dans GitHub Actions → `git pull` sur le
   droplet + upload scp des assets avec swap atomique (`build-new` → `build`).
 - Aucune manipulation manuelle sur la VM. Ne pas committer `public/build`.
+- Pour l'infra Docker en prod, voir le repo `crater-docker` (séparé).
 
 ## Mail
 
@@ -73,13 +73,13 @@ Astuce environnement : Node 16 est la version sûre pour Vite 2 (les versions r�
   (le modèle `User` hache automatiquement via un mutateur — ne jamais passer `bcrypt(...)` soi-même,
   sinon double hachage et connexion impossible) :
   ```bash
-  docker compose exec -T app php artisan tinker --execute="
-    \$u = \Crater\Models\User::where('email','...')->first();
-    \$u->password = 'motdepasse'; \$u->save();"
+  php artisan tinker --execute='
+    $u = \Crater\Models\User::where("email","...")->first();
+    $u->password = "motdepasse"; $u->save();'
   ```
 
 ## Branches et déploiement
 
-- Travailler sur une branche feature ; le push sur `master` déclenche le déploiement prod.
+- Travailler sur une branche feature ; le push sur `main` déclenche le déploiement prod.
 - CI : les assets frontend sont construits par GitHub Actions (Node 16 + yarn), pas localement,
   pas sur la VM.

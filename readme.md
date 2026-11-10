@@ -48,7 +48,6 @@ Join the Crater discord server to discuss:
 - [x] Installation Wizard
 - [x] Address Customisation & Default notes
 - [x] Edit Email before Sending Invoice
-- [x] Available as a docker image
 - [x] Performance Improvements
 - [x] Customer View page
 - [x] Add and Use Custom Fields on Invoices & Estimates.
