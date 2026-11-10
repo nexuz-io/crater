@@ -284,7 +284,9 @@
     "active_service": "Actief artikel",
     "active_service_help": "Actieve artikelen worden aangeboden in de AI-assistent.",
     "brand": "Merk",
-    "select_a_brand": "kies een merk"
+    "select_a_brand": "kies een merk",
+    "family": "Familie",
+    "select_a_family": "kies een familie"
   },
   "brands": {
     "title": "Merken",
@@ -1563,5 +1565,35 @@
   "pdf_bill_to": "Rekening naar,",
   "pdf_ship_to": "Verzend naar,",
   "pdf_received_from": "Ontvangen van:",
-  "pdf_tax_label": "Btw"
+  "pdf_tax_label": "Btw",
+  "item_families": {
+    "title": "Families",
+    "name": "Naam",
+    "name_placeholder": "bijv. Elektronica",
+    "add_root": "Nieuwe stamfamilie",
+    "add_first_root": "Eerste stamfamilie toevoegen",
+    "add_child": "Subfamilie toevoegen",
+    "add_child_of": "Subfamilie toevoegen aan \"{name}\"",
+    "add_child_inline": "Nieuwe familie toevoegen",
+    "change_parent": "Bovenliggende wijzigen",
+    "change_parent_of": "Verplaats \"{name}\"",
+    "parent_label": "Bovenliggende familie",
+    "parent_placeholder": "Kies een bovenliggende familie",
+    "root_badge": "Stam",
+    "expand_branch": "Vertakking uitklappen",
+    "collapse_branch": "Vertakking inklappen",
+    "no_families": "Nog geen families!",
+    "list_of_families": "Deze sectie bevat de boomstructuur van artikel-families.",
+    "search_placeholder": "Zoek op naam",
+    "confirm_delete": "Weet u zeker dat u \"{name}\" wilt verwijderen? Ontkoppel eerst subfamilies en artikelen.",
+    "family_attached_message": "Een familie kan niet worden verwijderd zolang subfamilies of artikelen gekoppeld zijn.",
+    "without_family": "Zonder familie",
+    "include_descendants": "Onderliggende families opnemen",
+    "children_count": "{count} subfamilie | {count} subfamilies",
+    "created_message": "Familie succesvol aangemaakt",
+    "updated_message": "Familie bijgewerkt",
+    "deleted_message": "Familie verwijderd",
+    "move_error_cycle": "Een familie kan niet onder een van zijn eigen nakomelingen worden geplaatst.",
+    "move_error_self": "Een familie kan niet zijn eigen ouder zijn."
+  }
 }

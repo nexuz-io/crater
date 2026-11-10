@@ -220,7 +220,9 @@
     "active_service": "Produto ativo",
     "active_service_help": "Os produtos ativos são oferecidos no assistente de IA.",
     "brand": "Marca",
-    "select_a_brand": "selecione uma marca"
+    "select_a_brand": "selecione uma marca",
+    "family": "Família",
+    "select_a_family": "selecione uma família"
   },
   "brands": {
     "title": "Marcas",
@@ -969,5 +971,35 @@
     "address_maxlength": "O endereço não deve ter mais que 255 caracteres.",
     "ref_number_maxlength": "O número de referência não deve ter mais que 255 caracteres.",
     "prefix_maxlength": "O prefixo não deve ter mais que 5 caracteres."
+  },
+  "item_families": {
+    "title": "Famílias",
+    "name": "Nome",
+    "name_placeholder": "p. ex. Eletrônica",
+    "add_root": "Nova família raiz",
+    "add_first_root": "Adicionar a primeira família raiz",
+    "add_child": "Adicionar subfamília",
+    "add_child_of": "Adicionar subfamília a \"{name}\"",
+    "add_child_inline": "Adicionar nova família",
+    "change_parent": "Mudar pai",
+    "change_parent_of": "Mover \"{name}\" para outro pai",
+    "parent_label": "Família pai",
+    "parent_placeholder": "Escolha uma família pai",
+    "root_badge": "Raiz",
+    "expand_branch": "Expandir ramo",
+    "collapse_branch": "Recolher ramo",
+    "no_families": "Ainda sem famílias!",
+    "list_of_families": "Esta seção vai conter a árvore de famílias.",
+    "search_placeholder": "Procurar por nome",
+    "confirm_delete": "Tem certeza de que deseja excluir \"{name}\"? Remova antes as subfamílias e artigos.",
+    "family_attached_message": "Não é possível excluir uma família enquanto houver subfamílias ou artigos associados.",
+    "without_family": "Sem família",
+    "include_descendants": "Incluir descendentes",
+    "children_count": "{count} subfamília | {count} subfamílias",
+    "created_message": "Família criada com sucesso",
+    "updated_message": "Família atualizada",
+    "deleted_message": "Família excluída",
+    "move_error_cycle": "Uma família não pode ser movida sob um dos seus próprios descendentes.",
+    "move_error_self": "Uma família não pode ser o próprio pai."
   }
 }

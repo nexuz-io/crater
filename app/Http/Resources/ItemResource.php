@@ -25,6 +25,7 @@ class ItemResource extends JsonResource
             'price' => $this->price,
             'unit_id' => $this->unit_id,
             'brand_id' => $this->brand_id,
+            'family_id' => $this->family_id,
             'company_id' => $this->company_id,
             'creator_id' => $this->creator_id,
             'currency_id' => $this->currency_id,
@@ -38,6 +39,9 @@ class ItemResource extends JsonResource
             }),
             'brand' => $this->when($this->brand()->exists(), function () {
                 return new BrandResource($this->brand);
+            }),
+            'family' => $this->when($this->family()->exists(), function () {
+                return new ItemFamilyResource($this->family);
             }),
             'company' => $this->when($this->company()->exists(), function () {
                 return new CompanyResource($this->company);

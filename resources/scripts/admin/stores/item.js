@@ -19,6 +19,8 @@ export const useItemStore = (useWindow = false) => {
       // Hydrated by `fetchItemBrands`; cleared by `resetCurrentItem`
       // so a stale company switch never leaks across the form.
       itemBrands: [],
+      // Cached family catalog for the item form's "Familia" selector.
+      itemFamilies: [],
       currentItemUnit: {
         id: null,
         name: '',
@@ -35,6 +37,8 @@ export const useItemStore = (useWindow = false) => {
         unit: null,
         brand_id: null,
         brand: null,
+        family_id: null,
+        family: null,
         taxes: [],
         tax_per_item: false,
         is_active: false,
@@ -57,6 +61,8 @@ export const useItemStore = (useWindow = false) => {
           unit: null,
           brand_id: null,
           brand: null,
+          family_id: null,
+          family: null,
           taxes: [],
           is_active: false,
         }
@@ -325,6 +331,26 @@ export const useItemStore = (useWindow = false) => {
             .get(`/api/v1/brands`, { params })
             .then((response) => {
               this.itemBrands = response.data.data
+              resolve(response)
+            })
+            .catch((err) => {
+              handleError(err)
+              reject(err)
+            })
+        })
+      },
+
+      // Families are also a per-company catalog. Flat list, since
+      // the selector renders paths client-side.
+      fetchItemFamilies(params) {
+        return new Promise((resolve, reject) => {
+          axios
+            .get(`/api/v1/item-families`, { params })
+            .then((response) => {
+              const payload = Array.isArray(response.data)
+                ? response.data
+                : response.data.data ?? []
+              this.itemFamilies = payload
               resolve(response)
             })
             .catch((err) => {

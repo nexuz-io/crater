@@ -284,7 +284,9 @@
     "active_service": "Aktiver Artikel",
     "active_service_help": "Aktive Artikel werden im KI-Assistenten angeboten.",
     "brand": "Marke",
-    "select_a_brand": "Marke auswählen"
+    "select_a_brand": "Marke auswählen",
+    "family": "Familie",
+    "select_a_family": "Familie auswählen"
   },
   "brands": {
     "title": "Marken",
@@ -1563,5 +1565,35 @@
   "pdf_bill_to": "Rechnungsanschrift",
   "pdf_ship_to": "Lieferanschrift",
   "pdf_received_from": "Erhalten von:",
-  "pdf_tax_label": "Steuer"
+  "pdf_tax_label": "Steuer",
+  "item_families": {
+    "title": "Familien",
+    "name": "Name",
+    "name_placeholder": "z. B. Elektronik",
+    "add_root": "Neue Stammfamilie",
+    "add_first_root": "Erste Stammfamilie hinzufügen",
+    "add_child": "Unterfamilie hinzufügen",
+    "add_child_of": "Unterfamilie zu „{name}\" hinzufügen",
+    "add_child_inline": "Neue Familie hinzufügen",
+    "change_parent": "Übergeordnete ändern",
+    "change_parent_of": "„{name}\" verschieben",
+    "parent_label": "Übergeordnete Familie",
+    "parent_placeholder": "Übergeordnete Familie wählen",
+    "root_badge": "Stamm",
+    "expand_branch": "Zweig ausklappen",
+    "collapse_branch": "Zweig einklappen",
+    "no_families": "Noch keine Familien!",
+    "list_of_families": "Dieser Bereich enthält den Stammbaum der Artikel-Familien.",
+    "search_placeholder": "Nach Name suchen",
+    "confirm_delete": "Möchten Sie „{name}\" wirklich löschen? Bitte entfernen Sie zuerst Unterfamilien und Artikel.",
+    "family_attached_message": "Eine Familie kann nicht gelöscht werden, solange Unterfamilien oder Artikel zugeordnet sind.",
+    "without_family": "Ohne Familie",
+    "include_descendants": "Unterfamilien einschließen",
+    "children_count": "{count} Unterfamilie | {count} Unterfamilien",
+    "created_message": "Familie erfolgreich erstellt",
+    "updated_message": "Familie aktualisiert",
+    "deleted_message": "Familie gelöscht",
+    "move_error_cycle": "Eine Familie kann nicht unter einen ihrer eigenen Nachkommen verschoben werden.",
+    "move_error_self": "Eine Familie kann nicht ihr eigenes Elternteil sein."
+  }
 }

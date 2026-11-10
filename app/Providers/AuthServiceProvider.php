@@ -4,6 +4,7 @@ namespace Crater\Providers;
 
 use Crater\Policies\BrandPolicy;
 use Crater\Policies\CompanyPolicy;
+use Crater\Policies\ItemFamilyPolicy;
 use Crater\Policies\CustomerPolicy;
 use Crater\Policies\DashboardPolicy;
 use Crater\Policies\EstimatePolicy;
@@ -43,6 +44,7 @@ class AuthServiceProvider extends ServiceProvider
         \Silber\Bouncer\Database\Role::class => \Crater\Policies\RolePolicy::class,
         \Crater\Models\Unit::class => \Crater\Policies\UnitPolicy::class,
         \Crater\Models\Brand::class => \Crater\Policies\BrandPolicy::class,
+        \Crater\Models\ItemFamily::class => \Crater\Policies\ItemFamilyPolicy::class,
         \Crater\Models\RecurringInvoice::class => \Crater\Policies\RecurringInvoicePolicy::class,
         \Crater\Models\ExchangeRateProvider::class => \Crater\Policies\ExchangeRateProviderPolicy::class,
     ];

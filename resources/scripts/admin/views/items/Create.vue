@@ -132,6 +132,37 @@
           </BaseInputGroup>
 
           <BaseInputGroup
+            :content-loading="isFetchingInitialData"
+            :label="$t('items.family')"
+          >
+            <BaseMultiselect
+              v-model="itemStore.currentItem.family_id"
+              :content-loading="isFetchingInitialData"
+              label="name"
+              :options="familyOptions"
+              value-prop="id"
+              :placeholder="$t('items.select_a_family')"
+              :allow-empty="true"
+              :clearable="true"
+              searchable
+              track-by="name"
+            >
+              <template
+                v-if="userStore.hasAbilities(abilities.CREATE_ITEM_FAMILY)"
+                #action
+              >
+                <BaseSelectAction @click="addItemFamily">
+                  <BaseIcon
+                    name="PlusIcon"
+                    class="h-4 mr-2 -ml-2 text-center text-primary-400"
+                  />
+                  {{ $t('item_families.add_child_inline') }}
+                </BaseSelectAction>
+              </template>
+            </BaseMultiselect>
+          </BaseInputGroup>
+
+          <BaseInputGroup
             :label="$t('items.unit_price')"
             :content-loading="isFetchingInitialData"
           >
@@ -406,14 +437,77 @@ async function addItemBrand() {
     refreshData: async (created) => {
       const data = created?.data?.data ?? created
       if (!data) return
-      // Reload the catalog and select the brand that the operator
-      // just created so the form keeps its context (item data
-      // untouched).
+      // Reload the brand catalog and select the brand the operator
+      // just created. Item data is left untouched.
       await itemStore.fetchItemBrands({ limit: 'all' })
       itemStore.currentItem.brand_id = data.id
     },
   })
 }
+
+// Family-side analogue: open the family admin modal, refresh the
+// catalog after creation, and assign the new node so the item data
+// survives the round trip.
+async function addItemFamily() {
+  modalStore.openModal({
+    title: t('item_families.add_root'),
+    componentName: 'ItemFamilyModal',
+    size: 'sm',
+    refreshData: async (created) => {
+      const data = created?.data?.data ?? created
+      if (!data) return
+      await itemStore.fetchItemFamilies({ limit: 'all' })
+      itemStore.currentItem.family_id = data.id
+    },
+  })
+}
+
+// Family options shown in the selector. Each `name` is decorated
+// with the full breadcrumb path "Root / Child / Grandchild" so
+// repeated names at different depths are still distinguishable.
+// Splicing the currently assigned family mirrors the same defensive
+// fallback the brand selector already performs.
+const familyOptions = computed(() => {
+  const list = itemStore.itemFamilies.map((family) => ({
+    ...family,
+  }))
+
+  const currentId = itemStore.currentItem.family_id
+  if (currentId && ! list.some((f) => f.id === currentId)) {
+    const inline = itemStore.currentItem.family
+    if (inline && inline.id) {
+      list.unshift(inline)
+    }
+  }
+
+  // Topologically walk the parent -> segments tree to tag each node
+  // with its full breadcrumb path. Single-level roots keep the
+  // original name so we don't muddy the most common case.
+  const segmentsFor = new Map()
+  segmentsFor.set(null, [])
+  const byParent = new Map()
+  for (const node of list) {
+    const key = node.parent_id ?? null
+    if (!byParent.has(key)) byParent.set(key, [])
+    byParent.get(key).push(node)
+  }
+  for (const parentKey of [...byParent.keys()].sort((a, b) =>
+    a === null ? -1 : b === null ? 1 : Number(a) - Number(b)
+  )) {
+    for (const node of byParent.get(parentKey)) {
+      const prefixSegments = segmentsFor.get(parentKey) ?? []
+      segmentsFor.set(node.id, [...prefixSegments, node.name])
+    }
+  }
+  for (const family of list) {
+    const segs = segmentsFor.get(family.id) ?? [family.name]
+    if (segs.length > 1) {
+      family.name = segs.join(' / ')
+    }
+  }
+
+  return list
+})
 
 async function loadData() {
   isFetchingInitialData.value = true
@@ -438,6 +532,13 @@ async function loadData() {
   // dropdown will fall back to the just-fetched item (see
   // `brandOptions`) so editing preserves even out-of-page results.
   await itemStore.fetchItemBrands({ limit: 'all' })
+
+  // Family catalog mirrors the same defensive strategy: re-fetch on
+  // each visit so editing preserves even deep assignments, and an
+  // empty catalog means the user can still create unbranded services.
+  if (userStore.hasAbilities(abilities.VIEW_ITEM_FAMILY)) {
+    await itemStore.fetchItemFamilies({ limit: 'all' })
+  }
 
   isFetchingInitialData.value = false
 }

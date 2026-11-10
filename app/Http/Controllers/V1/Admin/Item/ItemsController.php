@@ -26,7 +26,7 @@ class ItemsController extends Controller
 
         $items = Item::whereCompany()
             ->leftJoin('units', 'units.id', '=', 'items.unit_id')
-            ->with(['brand', 'taxes'])
+            ->with(['brand', 'family', 'taxes'])
             ->applyFilters($request->all())
             ->select('items.*', 'units.name as unit_name')
             ->latest()
@@ -64,7 +64,7 @@ class ItemsController extends Controller
     {
         $this->authorize('view', $item);
 
-        return new ItemResource($item->load('brand'));
+        return new ItemResource($item->load(['brand', 'family']));
     }
 
     /**

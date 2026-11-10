@@ -32,6 +32,11 @@ class Item extends Model
         return $this->belongsTo(Brand::class, 'brand_id');
     }
 
+    public function family()
+    {
+        return $this->belongsTo(ItemFamily::class, 'family_id');
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class);
@@ -70,6 +75,21 @@ class Item extends Model
     public function scopeWhereWithoutBrand($query)
     {
         $query->whereNull('items.brand_id');
+    }
+
+    /**
+     * Matches items attached to the given family. The caller is
+     * responsible for deciding whether descendants are included
+     * (see `ItemFamily::descendantIds`).
+     */
+    public function scopeWhereFamily($query, $family_id)
+    {
+        return $query->where('items.family_id', $family_id);
+    }
+
+    public function scopeWhereWithoutFamily($query)
+    {
+        $query->whereNull('items.family_id');
     }
 
     public function scopeWhereActive($query, $active = true)
@@ -121,6 +141,26 @@ class Item extends Model
             $query->whereWithoutBrand();
         } elseif ($filters->get('brand_id')) {
             $query->whereBrand($filters->get('brand_id'));
+        }
+
+        // family_id, include_descendants, and without_family follow
+        // the same mutual-exclusion pattern. include_descendants is
+        // defaulted to true (matches the plan decision: selecting a
+        // family lists its whole branch); callers send
+        // `include_descendants=0` to restrict to the exact node.
+        if ($filters->get('without_family') && ! $filters->get('family_id')) {
+            $query->whereWithoutFamily();
+        } elseif ($filters->get('family_id')) {
+            $familyId = (int) $filters->get('family_id');
+            $includeDescendants = $filters->get('include_descendants') === null
+                ? true
+                : (bool) $filters->get('include_descendants');
+
+            $ids = $includeDescendants
+                ? ItemFamily::descendantIds($familyId, (int) request()->header('company'))
+                : [$familyId];
+
+            $query->whereIn('items.family_id', $ids);
         }
 
         if ($filters->get('orderByField') || $filters->get('orderBy')) {
@@ -190,7 +230,7 @@ class Item extends Model
             }
         }
 
-        $item = self::with(['taxes', 'brand'])->find($item->id);
+        $item = self::with(['taxes', 'brand', 'family'])->find($item->id);
 
         return $item;
     }
@@ -217,6 +257,6 @@ class Item extends Model
             }
         }
 
-        return Item::with(['taxes', 'brand'])->find($this->id);
+        return Item::with(['taxes', 'brand', 'family'])->find($this->id);
     }
 }

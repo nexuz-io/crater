@@ -372,7 +372,9 @@
     "active_service": "Article actif",
     "active_service_help": "Les articles actifs sont proposés dans l'assistant IA.",
     "brand": "Marque",
-    "select_a_brand": "choisir une marque"
+    "select_a_brand": "choisir une marque",
+    "family": "Famille",
+    "select_a_family": "choisir une famille"
   },
   "brands": {
     "title": "Marques",
@@ -1769,5 +1771,35 @@
       "total": "Total"
     },
     "no_active_services": "Aucun service actif disponible. Activez un service dans la section Services."
+  },
+  "item_families": {
+    "title": "Familles",
+    "name": "Nom",
+    "name_placeholder": "p. ex. Électronique",
+    "add_root": "Nouvelle famille racine",
+    "add_first_root": "Ajouter la première famille racine",
+    "add_child": "Ajouter une sous-famille",
+    "add_child_of": "Ajouter une sous-famille à « {name} »",
+    "add_child_inline": "Ajouter une nouvelle famille",
+    "change_parent": "Changer de parent",
+    "change_parent_of": "Déplacer « {name} »",
+    "parent_label": "Famille parente",
+    "parent_placeholder": "Choisir une famille parente",
+    "root_badge": "Racine",
+    "expand_branch": "Déployer la branche",
+    "collapse_branch": "Réduire la branche",
+    "no_families": "Aucune famille",
+    "list_of_families": "Cette section affichera l'arborescence des familles.",
+    "search_placeholder": "Rechercher par nom",
+    "confirm_delete": "Voulez-vous vraiment supprimer « {name} » ? Détachez d'abord les sous-familles et les articles.",
+    "family_attached_message": "Impossible de supprimer une famille tant qu'elle a des sous-familles ou des articles.",
+    "without_family": "Sans famille",
+    "include_descendants": "Inclure les descendants",
+    "children_count": "{count} sous-famille | {count} sous-familles",
+    "created_message": "Famille créée",
+    "updated_message": "Famille mise à jour",
+    "deleted_message": "Famille supprimée",
+    "move_error_cycle": "Une famille ne peut pas être déplacée sous l'un de ses propres descendants.",
+    "move_error_self": "Une famille ne peut pas être son propre parent."
   }
 }

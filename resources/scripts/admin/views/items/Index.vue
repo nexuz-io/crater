@@ -36,6 +36,17 @@
           </BaseButton>
 
           <BaseButton
+            v-if="userStore.hasAbilities(abilities.VIEW_ITEM_FAMILY)"
+            variant="primary-outline"
+            @click="$router.push('/admin/item-families')"
+          >
+            <template #left="slotProps">
+              <BaseIcon name="PuzzleIcon" :class="slotProps.class" />
+            </template>
+            {{ $t('item_families.title') }}
+          </BaseButton>
+
+          <BaseButton
             v-if="userStore.hasAbilities(abilities.CREATE_ITEM)"
             @click="$router.push('/admin/items/create')"
           >
@@ -114,6 +125,40 @@
         <BaseSwitch
           :model-value="filters.without_brand"
           @update:model-value="toggleWithoutBrand"
+        />
+      </BaseInputGroup>
+
+      <BaseInputGroup :label="$t('items.family')" class="text-left">
+        <BaseMultiselect
+          v-model="filters.family_id"
+          :placeholder="$t('items.select_a_family')"
+          value-prop="id"
+          track-by="name"
+          :filter-results="false"
+          :allow-empty="true"
+          :clearable="true"
+          label="name"
+          resolve-on-load
+          :delay="500"
+          searchable
+          class="w-full"
+          :options="searchFamilies"
+          @update:model-value="onFamilyFilterChange"
+        />
+      </BaseInputGroup>
+
+      <BaseInputGroup class="text-left" :label="$t('item_families.include_descendants')">
+        <BaseSwitch
+          v-show="filters.family_id"
+          :model-value="filters.include_descendants"
+          @update:model-value="toggleIncludeDescendants"
+        />
+      </BaseInputGroup>
+
+      <BaseInputGroup class="text-left" :label="$t('item_families.without_family')">
+        <BaseSwitch
+          :model-value="filters.without_family"
+          @update:model-value="toggleWithoutFamily"
         />
       </BaseInputGroup>
     </BaseFilterWrapper>
@@ -230,6 +275,12 @@
           </span>
         </template>
 
+        <template #cell-family="{ row }">
+          <span :title="familyPathFor(row.data)">
+            {{ familyPathFor(row.data) || '—' }}
+          </span>
+        </template>
+
         <template #cell-price="{ row }">
           <BaseFormatMoney
             :amount="row.data.price"
@@ -285,6 +336,9 @@ const filters = reactive({
   brand_id: '',
   active: '',
   without_brand: false,
+  family_id: '',
+  without_family: false,
+  include_descendants: true,
 })
 
 const table = ref(null)
@@ -297,6 +351,13 @@ const statusOptions = [
 const showEmptyScreen = computed(
   () => !itemStore.totalItems && !isFetchingInitialData.value
 )
+
+// Eagerly populate the family catalog so the table cell renders
+// breadcrumb paths on first paint. The `searchFamilies` helper below
+// reuses the same catalogue when the filter is interacted with.
+if (userStore?.hasAbilities?.(abilities.VIEW_ITEM_FAMILY)) {
+  itemStore.fetchItemFamilies({ limit: 'all' })
+}
 
 const selectField = computed({
   get: () => itemStore.selectedItems,
@@ -330,6 +391,11 @@ const itemColumns = computed(() => {
     {
       key: 'brand',
       label: t('items.brand'),
+      tdClass: 'font-medium text-gray-900',
+    },
+    {
+      key: 'family',
+      label: t('items.family'),
       tdClass: 'font-medium text-gray-900',
     },
     { key: 'price', label: t('items.unit_price') },
@@ -367,6 +433,9 @@ function clearFilter() {
   filters.brand_id = ''
   filters.active = ''
   filters.without_brand = false
+  filters.family_id = ''
+  filters.without_family = false
+  filters.include_descendants = true
 }
 
 function hasAbilities() {
@@ -417,6 +486,91 @@ function toggleWithoutBrand(value) {
   }
 }
 
+// Family filter mirrors the brand filter contract: without_family
+// and family_id are mutually exclusive; include_descendants only
+// applies when a specific family is selected.
+function onFamilyFilterChange(value) {
+  if (value) {
+    filters.without_family = false
+  }
+}
+
+function toggleWithoutFamily(value) {
+  filters.without_family = value
+  if (value) {
+    filters.family_id = ''
+  }
+}
+
+function toggleIncludeDescendants(value) {
+  filters.include_descendants = !!value
+}
+
+// Search the family catalog for the multiselect dropdown. The
+// controller returns the flat list, so we decorate each entry's
+// `name` with the breadcrumb path to disambiguate nodes that share
+// the same text under different parents.
+async function searchFamilies(search) {
+  const res = await itemStore.fetchItemFamilies({
+    search,
+    limit: 'all',
+  })
+
+  const families = Array.isArray(res.data)
+    ? res.data
+    : res.data.data ?? []
+  const byParent = new Map()
+  families.forEach((f) => {
+    const key = f.parent_id ?? '__root__'
+    if (!byParent.has(key)) byParent.set(key, [])
+    byParent.get(key).push(f)
+  })
+
+  const segmentsFor = new Map()
+  segmentsFor.set('__root__', [])
+  for (const key of [...byParent.keys()].sort((a, b) =>
+    a === '__root__' ? -1 : b === '__root__' ? 1 : Number(a) - Number(b)
+  )) {
+    for (const node of byParent.get(key) ?? []) {
+      const prefix = segmentsFor.get(key) ?? []
+      segmentsFor.set(node.id, [...prefix, node.name])
+    }
+  }
+  for (const family of families) {
+    const segs = segmentsFor.get(family.id) ?? [family.name]
+    if (segs.length > 1) {
+      family.name = segs.join(' / ')
+    }
+  }
+
+  return families
+}
+
+function familyPathFor(row) {
+  if (!row.family) return ''
+  const segments = []
+  let cursor = row.family
+  let depth = 0
+  const maxDepth = 64
+
+  while (cursor && depth < maxDepth) {
+    segments.unshift(cursor.name)
+    if (!cursor.parent_id) break
+    cursor = familyCache.value[cursor.parent_id]
+    depth++
+  }
+
+  return segments.join(' / ')
+}
+
+const familyCache = computed(() => {
+  const map = {}
+  for (const family of itemStore.itemFamilies ?? []) {
+    map[family.id] = family
+  }
+  return map
+})
+
 async function fetchData({ page, filter, sort }) {
   let data = {
     search: filters.name,
@@ -425,6 +579,11 @@ async function fetchData({ page, filter, sort }) {
     active: filters.active !== '' && filters.active !== null && filters.active !== undefined ? filters.active : '',
     brand_id: filters.brand_id !== null && filters.brand_id !== '' ? filters.brand_id : '',
     without_brand: filters.without_brand ? '1' : '',
+    family_id: filters.family_id !== null && filters.family_id !== '' ? filters.family_id : '',
+    without_family: filters.without_family ? '1' : '',
+    include_descendants: filters.family_id && filters.without_brand === false && filters.without_family === false
+      ? (filters.include_descendants ? '1' : '0')
+      : '',
     orderByField: sort.fieldName || 'created_at',
     orderBy: sort.order || 'desc',
     page,

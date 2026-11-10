@@ -63,6 +63,9 @@ const ItemCreate = () => import('@/scripts/admin/views/items/Create.vue')
 
 // Brands
 const BrandsIndex = () => import('@/scripts/admin/views/brands/Index.vue')
+
+// Item families
+const ItemFamiliesIndex = () => import('@/scripts/admin/views/item-families/Index.vue')
 const CalculatorView = () => import('@/scripts/admin/views/calculator/View.vue')
 const CalculatorSetting = () => import('@/scripts/admin/views/settings/CalculatorSetting.vue')
 const AiAssistantSetting = () =>
@@ -375,6 +378,17 @@ export default [
         path: 'brands',
         meta: { ability: abilities.VIEW_BRAND },
         component: BrandsIndex,
+      },
+
+      // Item families: hierarchical catalog with self-referencing
+      // parent_id. Mounted under a dedicated admin page so the
+      // tree UI does not pollute the articles list. Mutations are
+      // gated by edit / delete item-family inside the tree node
+      // component.
+      {
+        path: 'item-families',
+        meta: { ability: abilities.VIEW_ITEM_FAMILY },
+        component: ItemFamiliesIndex,
       },
 
       // Calculators

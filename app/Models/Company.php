@@ -126,6 +126,46 @@ class Company extends Model implements HasMedia
         return $this->hasMany(Brand::class);
     }
 
+    public function itemFamilies()
+    {
+        return $this->hasMany(ItemFamily::class);
+    }
+
+    /**
+     * Walk leaves → roots via BFS so the ON DELETE RESTRICT FK on
+     * parent_id never blocks a tear-down. Without this, MySQL is
+     * free to attempt any row order and the cascade from
+     * company_id is not allowed to walk the tree.
+     */
+    public function deleteItemFamiliesDeep(): void
+    {
+        $companyId = $this->id;
+        $count = $this->itemFamilies()->count();
+        while ($count > 0) {
+            $leaves = \Crater\Models\ItemFamily::where('company_id', $companyId)
+                ->whereNotIn('parent_id', function ($q) use ($companyId) {
+                    $q->select('id')
+                        ->from('item_families')
+                        ->where('company_id', $companyId);
+                })
+                ->get();
+
+            if ($leaves->isEmpty()) {
+                // Defensive: nothing qualifies as a "leaf", so break
+                // to avoid an infinite loop on a corrupt tree. The
+                // remaining rows share company_id with us and the
+                // cascade would tear them down on $this->delete().
+                break;
+            }
+
+            foreach ($leaves as $leaf) {
+                $leaf->delete();
+            }
+
+            $count = $this->itemFamilies()->count();
+        }
+    }
+
     public function expenseCategories()
     {
         return $this->hasMany(ExpenseCategory::class);
@@ -368,6 +408,15 @@ class Company extends Model implements HasMedia
         if ($this->brands()->exists()) {
             $this->brands()->delete();
         }
+
+        // Item families carry a self-referencing ON DELETE RESTRICT
+        // FK. Walking the tree leaves → roots here so MySQL /
+        // SQLite / PostgreSQL all see the same deletion order; the
+        // service-level reject already keeps "family with items"
+        // out of the operator-visible delete button. Items have
+        // already been deleted above, so the FAMILIES row count is
+        // only bound by operator activity.
+        $this->deleteItemFamiliesDeep();
 
         if ($this->taxTypes()->exists()) {
             $this->taxTypes()->delete();

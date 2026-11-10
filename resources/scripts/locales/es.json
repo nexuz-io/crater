@@ -284,7 +284,9 @@
     "active_service": "Artículo activo",
     "active_service_help": "Los artículos activos se ofrecen en el asistente de IA.",
     "brand": "Marca",
-    "select_a_brand": "seleccionar marca"
+    "select_a_brand": "seleccionar marca",
+    "family": "Familia",
+    "select_a_family": "seleccionar familia"
   },
   "brands": {
     "title": "Marcas",
@@ -1566,5 +1568,35 @@
   "pdf_bill_to": "Cobrar a,",
   "pdf_ship_to": "Enviar a,",
   "pdf_received_from": "Recibido desde:",
-  "pdf_tax_label": "Impuesto"
+  "pdf_tax_label": "Impuesto",
+  "item_families": {
+    "title": "Familias",
+    "name": "Nombre",
+    "name_placeholder": "p. ej. Electrónica",
+    "add_root": "Nueva familia raíz",
+    "add_first_root": "Añadir la primera familia raíz",
+    "add_child": "Añadir subfamilia",
+    "add_child_of": "Añadir subfamilia a «{name}»",
+    "add_child_inline": "Añadir nueva familia",
+    "change_parent": "Cambiar de padre",
+    "change_parent_of": "Mover «{name}» a otro padre",
+    "parent_label": "Familia padre",
+    "parent_placeholder": "Elige una familia padre",
+    "root_badge": "Raíz",
+    "expand_branch": "Expandir rama",
+    "collapse_branch": "Contraer rama",
+    "no_families": "¡Aún no hay familias!",
+    "list_of_families": "Esta sección contendrá el árbol de familias de artículos.",
+    "search_placeholder": "Buscar por nombre",
+    "confirm_delete": "¿Seguro que quieres eliminar «{name}»? Primero debes desvincular subfamilias y artículos.",
+    "family_attached_message": "No se puede eliminar una familia mientras tenga subfamilias o artículos asociados.",
+    "without_family": "Sin familia",
+    "include_descendants": "Incluir descendientes",
+    "children_count": "{count} subfamilia | {count} subfamilias",
+    "created_message": "Familia creada satisfactoriamente",
+    "updated_message": "Familia actualizada",
+    "deleted_message": "Familia eliminada",
+    "move_error_cycle": "Una familia no se puede mover bajo uno de sus propios descendientes.",
+    "move_error_self": "Una familia no puede ser su propio padre."
+  }
 }

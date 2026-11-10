@@ -284,7 +284,9 @@
     "active_service": "Aktivan artikl",
     "active_service_help": "Aktivni artikli nude se u AI asistentu.",
     "brand": "Brand",
-    "select_a_brand": "select a brand"
+    "select_a_brand": "select a brand",
+    "family": "Family",
+    "select_a_family": "select a family"
   },
   "brands": {
     "title": "Brands",
@@ -1563,5 +1565,35 @@
   "pdf_bill_to": "Račun za,",
   "pdf_ship_to": "Isporučiti za,",
   "pdf_received_from": "Poslat od strane:",
-  "pdf_tax_label": "Porez"
+  "pdf_tax_label": "Porez",
+  "item_families": {
+    "title": "Families",
+    "name": "Name",
+    "name_placeholder": "e.g. Electronics",
+    "add_root": "New root family",
+    "add_first_root": "Add the first root family",
+    "add_child": "Add subfamily",
+    "add_child_of": "Add subfamily to “{name}”",
+    "add_child_inline": "Add a new family",
+    "change_parent": "Change parent",
+    "change_parent_of": "Move “{name}” to another parent",
+    "parent_label": "Parent",
+    "parent_placeholder": "Pick a parent family",
+    "root_badge": "Root",
+    "expand_branch": "Expand branch",
+    "collapse_branch": "Collapse branch",
+    "no_families": "No families yet!",
+    "list_of_families": "This section will contain the tree of item families.",
+    "search_placeholder": "Search by name",
+    "confirm_delete": "Are you sure you want to delete “{name}”? Subfamilies and services must be detached first.",
+    "family_attached_message": "This family cannot be deleted while subfamilies or services are attached.",
+    "without_family": "Without family",
+    "include_descendants": "Include descendants",
+    "children_count": "{count} subfamilies | {count} subfamilies",
+    "created_message": "Family created successfully",
+    "updated_message": "Family updated successfully",
+    "deleted_message": "Family deleted successfully",
+    "move_error_cycle": "A family cannot be moved under one of its own descendants.",
+    "move_error_self": "A family cannot be its own parent."
+  }
 }

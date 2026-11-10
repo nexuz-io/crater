@@ -9,6 +9,7 @@ use Crater\Models\ExchangeRateProvider;
 use Crater\Models\Expense;
 use Crater\Models\Invoice;
 use Crater\Models\Item;
+use Crater\Models\ItemFamily;
 use Crater\Models\Note;
 use Crater\Models\Payment;
 use Crater\Models\RecurringInvoice;
@@ -116,6 +117,42 @@ return [
             "model" => Brand::class,
             "depends_on" => [
                 'view-brand',
+            ]
+        ],
+
+        // Item Family: hierarchical catalog (parent_id self-join)
+        // attached to the article catalog. Visibility is gated on
+        // view-item for the same reason as brands.
+        [
+            "name" => "view item family",
+            "ability" => "view-item-family",
+            "model" => ItemFamily::class,
+            "depends_on" => [
+                'view-item',
+            ]
+        ],
+        [
+            "name" => "create item family",
+            "ability" => "create-item-family",
+            "model" => ItemFamily::class,
+            "depends_on" => [
+                'view-item-family',
+            ]
+        ],
+        [
+            "name" => "edit item family",
+            "ability" => "edit-item-family",
+            "model" => ItemFamily::class,
+            "depends_on" => [
+                'view-item-family',
+            ]
+        ],
+        [
+            "name" => "delete item family",
+            "ability" => "delete-item-family",
+            "model" => ItemFamily::class,
+            "depends_on" => [
+                'view-item-family',
             ]
         ],
 

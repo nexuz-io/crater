@@ -3,6 +3,7 @@
 namespace Crater\Http\Requests;
 
 use Crater\Models\Brand;
+use Crater\Models\ItemFamily;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,6 +31,11 @@ class ItemsRequest extends FormRequest
             'brand_id' => $this->input('brand_id') === '' || $this->input('brand_id') === null
                 ? null
                 : $this->input('brand_id'),
+            // Same coercion for the family selector's "Sin familia"
+            // option.
+            'family_id' => $this->input('family_id') === '' || $this->input('family_id') === null
+                ? null
+                : $this->input('family_id'),
         ]);
     }
 
@@ -83,6 +89,15 @@ class ItemsRequest extends FormRequest
                 // validating here gives the client a clear 422 error
                 // instead of a generic integrity violation.
                 Rule::exists((new Brand())->getTable(), 'id')
+                    ->where('company_id', $this->header('company')),
+            ],
+            'family_id' => [
+                'nullable',
+                'integer',
+                // Cross-company family IDs are rejected here. Cycles /
+                // sibling uniqueness are managed inside the family
+                // service, not at the item boundary.
+                Rule::exists((new ItemFamily())->getTable(), 'id')
                     ->where('company_id', $this->header('company')),
             ],
         ];

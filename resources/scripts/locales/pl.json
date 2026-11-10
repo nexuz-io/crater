@@ -284,7 +284,9 @@
     "active_service": "Aktywny produkt",
     "active_service_help": "Aktywne produkty są oferowane w asystencie AI.",
     "brand": "Marka",
-    "select_a_brand": "wybierz markę"
+    "select_a_brand": "wybierz markę",
+    "family": "Rodzina",
+    "select_a_family": "wybierz rodzinę"
   },
   "brands": {
     "title": "Marki",
@@ -1563,5 +1565,35 @@
   "pdf_bill_to": "Wystawiono dla",
   "pdf_ship_to": "Wysyłka do",
   "pdf_received_from": "Otrzymane od:",
-  "pdf_tax_label": "Podatek"
+  "pdf_tax_label": "Podatek",
+  "item_families": {
+    "title": "Rodziny",
+    "name": "Nazwa",
+    "name_placeholder": "np. Elektronika",
+    "add_root": "Nowa rodzina główna",
+    "add_first_root": "Dodaj pierwszą rodzinę główną",
+    "add_child": "Dodaj podrodzinę",
+    "add_child_of": "Dodaj podrodzinę do \"{name}\"",
+    "add_child_inline": "Dodaj nową rodzinę",
+    "change_parent": "Zmień rodzica",
+    "change_parent_of": "Przenieś \"{name}\"",
+    "parent_label": "Rodzic",
+    "parent_placeholder": "Wybierz rodzinę nadrzędną",
+    "root_badge": "Korzeń",
+    "expand_branch": "Rozwiń gałąź",
+    "collapse_branch": "Zwiń gałąź",
+    "no_families": "Brak rodzin!",
+    "list_of_families": "Ta sekcja zawiera drzewo rodzin artykułów.",
+    "search_placeholder": "Szukaj po nazwie",
+    "confirm_delete": "Czy na pewno chcesz usunąć „{name}\"? Najpierw odłącz podrodziny i artykuły.",
+    "family_attached_message": "Rodziny nie można usunąć, dopóki przypisane są do niej podrodziny lub artykuły.",
+    "without_family": "Bez rodziny",
+    "include_descendants": "Uwzględnij potomków",
+    "children_count": "{count} podrodzina | {count} podrodzin",
+    "created_message": "Rodzina została utworzona",
+    "updated_message": "Rodzina zaktualizowana",
+    "deleted_message": "Rodzina usunięta",
+    "move_error_cycle": "Rodziny nie można przenieść pod jednego z jej własnych potomków.",
+    "move_error_self": "Rodzina nie może być swoim własnym rodzicem."
+  }
 }

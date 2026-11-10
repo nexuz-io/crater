@@ -20,6 +20,12 @@ export default {
   EDIT_BRAND: 'edit-brand',
   VIEW_BRAND: 'view-brand',
 
+  // Item families: hierarchical self-join catalog (parent_id).
+  CREATE_ITEM_FAMILY: 'create-item-family',
+  DELETE_ITEM_FAMILY: 'delete-item-family',
+  EDIT_ITEM_FAMILY: 'edit-item-family',
+  VIEW_ITEM_FAMILY: 'view-item-family',
+
   // Tax Types
   CREATE_TAX_TYPE: 'create-tax-type',
   DELETE_TAX_TYPE: 'delete-tax-type',

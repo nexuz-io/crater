@@ -55,6 +55,7 @@ use Crater\Http\Controllers\V1\Admin\Invoice\InvoiceTemplatesController;
 use Crater\Http\Controllers\V1\Admin\Invoice\SendInvoiceController;
 use Crater\Http\Controllers\V1\Admin\Invoice\SendInvoicePreviewController;
 use Crater\Http\Controllers\V1\Admin\Item\BrandsController;
+use Crater\Http\Controllers\V1\Admin\Item\ItemFamiliesController;
 use Crater\Http\Controllers\V1\Admin\Item\ItemsController;
 use Crater\Http\Controllers\V1\Admin\Item\UnitsController;
 use Crater\Http\Controllers\V1\Admin\Mobile\AuthController;
@@ -310,6 +311,8 @@ Route::prefix('/v1')->group(function () {
             Route::resource('units', UnitsController::class);
 
             Route::apiResource('brands', BrandsController::class);
+
+            Route::apiResource('item-families', ItemFamiliesController::class);
 
 
             // Invoices

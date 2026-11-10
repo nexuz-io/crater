@@ -284,7 +284,9 @@
     "active_service": "Articolo attivo",
     "active_service_help": "Gli articoli attivi sono proposti nell'assistente IA.",
     "brand": "Marca",
-    "select_a_brand": "seleziona una marca"
+    "select_a_brand": "seleziona una marca",
+    "family": "Famiglia",
+    "select_a_family": "seleziona una famiglia"
   },
   "brands": {
     "title": "Marche",
@@ -1563,5 +1565,35 @@
   "pdf_bill_to": "Fattura a,",
   "pdf_ship_to": "Invia a,",
   "pdf_received_from": "Ricevuto da:",
-  "pdf_tax_label": "Tassa"
+  "pdf_tax_label": "Tassa",
+  "item_families": {
+    "title": "Famiglie",
+    "name": "Nome",
+    "name_placeholder": "es. Elettronica",
+    "add_root": "Nuova famiglia radice",
+    "add_first_root": "Aggiungi la prima famiglia radice",
+    "add_child": "Aggiungi sottofamiglia",
+    "add_child_of": "Aggiungi sottofamiglia a \"{name}\"",
+    "add_child_inline": "Aggiungi una nuova famiglia",
+    "change_parent": "Cambia padre",
+    "change_parent_of": "Sposta \"{name}\" ad un altro padre",
+    "parent_label": "Famiglia padre",
+    "parent_placeholder": "Scegli una famiglia padre",
+    "root_badge": "Radice",
+    "expand_branch": "Espandi ramo",
+    "collapse_branch": "Comprimi ramo",
+    "no_families": "Nessuna famiglia!",
+    "list_of_families": "Questa sezione mostrerà l'albero delle famiglie.",
+    "search_placeholder": "Cerca per nome",
+    "confirm_delete": "Eliminare \"{name}\"? Scollegare prima sottofamiglie e articoli.",
+    "family_attached_message": "Impossibile eliminare una famiglia finché ha sottofamiglie o articoli associati.",
+    "without_family": "Senza famiglia",
+    "include_descendants": "Includi discendenti",
+    "children_count": "{count} sottofamiglia | {count} sottofamiglie",
+    "created_message": "Famiglia creata correttamente",
+    "updated_message": "Famiglia aggiornata",
+    "deleted_message": "Famiglia eliminata",
+    "move_error_cycle": "Una famiglia non può essere spostata sotto uno dei propri discendenti.",
+    "move_error_self": "Una famiglia non può essere il proprio padre."
+  }
 }
