@@ -4,30 +4,15 @@ namespace Crater\Http\Controllers\V1\Admin\Auth;
 
 use Crater\Http\Controllers\Controller;
 use Crater\Providers\RouteServiceProvider;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Auth\Events\Lockout;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
-
-    use AuthenticatesUsers;
-
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
-    protected $redirectTo = RouteServiceProvider::HOME;
-
     /**
      * Create a new controller instance.
      *
@@ -35,6 +20,43 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest')->except('logout');
+        $this->middleware('guest');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $key = Str::transliterate(Str::lower($credentials['email']).'|'.$request->ip());
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            event(new Lockout($request));
+            $seconds = RateLimiter::availableIn($key);
+
+            throw ValidationException::withMessages([
+                'email' => [trans('auth.throttle', [
+                    'seconds' => $seconds,
+                    'minutes' => (int) ceil($seconds / 60),
+                ])],
+            ])->status(429);
+        }
+
+        if (! Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
+            RateLimiter::hit($key, 60);
+
+            throw ValidationException::withMessages([
+                'email' => [trans('auth.failed')],
+            ]);
+        }
+
+        $request->session()->regenerate();
+        RateLimiter::clear($key);
+
+        return $request->wantsJson()
+            ? response()->noContent()
+            : redirect()->intended(RouteServiceProvider::HOME);
     }
 }

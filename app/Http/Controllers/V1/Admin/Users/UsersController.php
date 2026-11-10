@@ -61,6 +61,18 @@ class UsersController extends Controller
     {
         $this->authorize('view', $user);
 
+        $scope = \Silber\Bouncer\BouncerFacade::scope();
+        $previousScope = $scope->get();
+
+        try {
+            foreach ($user->companies as $company) {
+                $scope->to($company->id);
+                $company->setAttribute('assigned_role', $user->roles()->value('name'));
+            }
+        } finally {
+            $scope->to($previousScope);
+        }
+
         return new UserResource($user);
     }
 

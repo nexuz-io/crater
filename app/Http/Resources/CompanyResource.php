@@ -22,6 +22,7 @@ class CompanyResource extends JsonResource
             'unique_hash' => $this->unique_hash,
             'owner_id' => $this->owner_id,
             'slug' => $this->slug,
+            'role' => $this->whenHas('assigned_role'),
             'address' => $this->when($this->address()->exists(), function () {
                 return new AddressResource($this->address);
             }),

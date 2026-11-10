@@ -64,9 +64,11 @@ export const useUsersStore = (useWindow = false) => {
               this.userData = response.data.data
               if (this.userData?.companies?.length) {
                 this.userData.companies.forEach((c, i) => {
-                  for (const r of this.userData.roles || []) {
-                    if (String(r.scope) === String(c.id))
-                      this.userData.companies[i].role = r.name
+                  if (!Object.prototype.hasOwnProperty.call(c, 'role')) {
+                    const role = (this.userData.roles || []).find(
+                      (r) => String(r.scope) === String(c.id)
+                    )
+                    this.userData.companies[i].role = role?.name || null
                   }
                 })
               }
