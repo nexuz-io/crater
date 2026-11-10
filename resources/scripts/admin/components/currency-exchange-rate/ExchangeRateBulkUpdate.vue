@@ -12,44 +12,45 @@
     </p>
 
     <form action="" @submit.prevent="submitBulkUpdate">
-      <ValidateEach
+      <BaseInputGroup
         v-for="(c, i) in exchangeRateStore.bulkCurrencies"
         :key="i"
-        :state="c"
-        :rules="currencyArrayRules"
+        class="my-5"
+        :label="`${c.code} to ${companyStore.selectedCompanyCurrency.code}`"
+        :error="
+          v[i] &&
+          v[i].exchange_rate &&
+          v[i].exchange_rate.$error &&
+          v[i].exchange_rate.$errors[0] &&
+          v[i].exchange_rate.$errors[0].$message
+        "
+        required
       >
-        <template #default="{ v }">
-          <BaseInputGroup
-            class="my-5"
-            :label="`${c.code} to ${companyStore.selectedCompanyCurrency.code}`"
-            :error="
-              v.exchange_rate.$error && v.exchange_rate.$errors[0].$message
-            "
-            required
-          >
-            <BaseInput
-              v-model="c.exchange_rate"
-              :addon="`1 ${c.code} =`"
-              :invalid="v.exchange_rate.$error"
-              @input="v.exchange_rate.$touch()"
-            >
-              <template #right>
-                <span class="text-gray-500 sm:text-sm">
-                  {{ companyStore.selectedCompanyCurrency.code }}
-                </span>
-              </template>
-            </BaseInput>
-            <span class="text-gray-400 text-xs mt-2 font-light">
-              {{
-                $t('settings.exchange_rate.exchange_help_text', {
-                  currency: c.code,
-                  baseCurrency: companyStore.selectedCompanyCurrency.code,
-                })
-              }}
+        <BaseInput
+          v-model="c.exchange_rate"
+          :addon="`1 ${c.code} =`"
+          :invalid="
+            v[i] && v[i].exchange_rate && v[i].exchange_rate.$error
+          "
+          @input="
+            v[i] && v[i].exchange_rate && v[i].exchange_rate.$touch()
+          "
+        >
+          <template #right>
+            <span class="text-gray-500 sm:text-sm">
+              {{ companyStore.selectedCompanyCurrency.code }}
             </span>
-          </BaseInputGroup>
-        </template>
-      </ValidateEach>
+          </template>
+        </BaseInput>
+        <span class="text-gray-400 text-xs mt-2 font-light">
+          {{
+            $t('settings.exchange_rate.exchange_help_text', {
+              currency: c.code,
+              baseCurrency: companyStore.selectedCompanyCurrency.code,
+            })
+          }}
+        </span>
+      </BaseInputGroup>
       <div
         slot="footer"
         class="
@@ -78,7 +79,6 @@ import { computed, ref } from '@vue/runtime-core'
 import { useI18n } from 'vue-i18n'
 import useVuelidate from '@vuelidate/core'
 import { required, helpers, numeric, decimal } from '@vuelidate/validators'
-import { ValidateEach } from '@vuelidate/components'
 
 const exchangeRateStore = useExchangeRateStore()
 const notificationStore = useNotificationStore()
@@ -94,7 +94,16 @@ const currencyArrayRules = {
     decimal: helpers.withMessage(t('validation.valid_exchange_rate'), decimal),
   },
 }
-const v = useVuelidate()
+
+// Per-item validation (replaces @vuelidate/components ValidateEach).
+// Each currency row in exchangeRateStore.bulkCurrencies is validated against
+// currencyArrayRules; v[i] gives us the validation ref for row i.
+const v = useVuelidate(
+  computed(() => ({
+    $each: currencyArrayRules,
+  })),
+  exchangeRateStore.bulkCurrencies
+)
 
 const emit = defineEmits(['update'])
 

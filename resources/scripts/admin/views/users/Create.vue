@@ -74,38 +74,47 @@
               />
             </BaseInputGroup>
 
-            <ValidateEach
+            <div
               v-for="(company, i) in userStore.userData.companies"
               :key="i"
-              :state="company"
-              :rules="companyArrayRules"
+              class="space-y-6"
             >
-              <template #default="{ v }">
-                <div class="space-y-6">
-                  <BaseInputGroup
-                    :content-loading="isFetchingInitialData"
-                    :label="
-                      $t('users.select_company_role', { company: company.name })
-                    "
-                    :error="v.role.$error && v.role.$errors[0].$message"
-                    required
-                  >
-                    <BaseMultiselect
-                      v-model="userStore.userData.companies[i].role"
-                      value-prop="name"
-                      track-by="id"
-                      autocomplete="off"
-                      :content-loading="isFetchingInitialData"
-                      label="name"
-                      :options="userStore.userData.companies[i].roles"
-                      :can-deselect="false"
-                      :invalid="v.role.$invalid"
-                      @change="v.role.$touch()"
-                    />
-                  </BaseInputGroup>
-                </div>
-              </template>
-            </ValidateEach>
+              <BaseInputGroup
+                :content-loading="isFetchingInitialData"
+                :label="
+                  $t('users.select_company_role', { company: company.name })
+                "
+                :error="
+                  companiesV$[i] &&
+                  companiesV$[i].role &&
+                  companiesV$[i].role.$error &&
+                  companiesV$[i].role.$errors[0] &&
+                  companiesV$[i].role.$errors[0].$message
+                "
+                required
+              >
+                <BaseMultiselect
+                  v-model="userStore.userData.companies[i].role"
+                  value-prop="name"
+                  track-by="id"
+                  autocomplete="off"
+                  :content-loading="isFetchingInitialData"
+                  label="name"
+                  :options="userStore.userData.companies[i].roles"
+                  :can-deselect="false"
+                  :invalid="
+                    companiesV$[i] &&
+                    companiesV$[i].role &&
+                    companiesV$[i].role.$invalid
+                  "
+                  @change="
+                    companiesV$[i] &&
+                    companiesV$[i].role &&
+                    companiesV$[i].role.$touch()
+                  "
+                />
+              </BaseInputGroup>
+            </div>
 
             <BaseInputGroup
               :content-loading="isFetchingInitialData"
@@ -173,7 +182,6 @@ import {
   helpers,
 } from '@vuelidate/validators'
 import useVuelidate from '@vuelidate/core'
-import { ValidateEach } from '@vuelidate/components'
 import { useI18n } from 'vue-i18n'
 import { useUsersStore } from '@/scripts/admin/stores/users'
 
@@ -235,6 +243,16 @@ const companyArrayRules = {
 const v$ = useVuelidate(rules, userStore, {
   $scope: true,
 })
+
+// Per-item validation for the companies array (replaces @vuelidate/components ValidateEach).
+// The core@2 useVuelidate call uses the inner rules shape and the array as state, so that
+// companiesV$[i].role.$error / $invalid / $touch() works through the nested structure.
+const companiesV$ = useVuelidate(
+  computed(() => ({
+    $each: companyArrayRules,
+  })),
+  userStore.userData.companies
+)
 
 loadInitialData()
 
