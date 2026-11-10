@@ -12,13 +12,11 @@ Homestead.yaml
 .rnd
 /.expo
 /.vscode
-/docker-compose/db/data/
 .gitkeep
 /public/docs
 /.scribe
 !storage/fonts/.gitkeep
 .DS_Store
-.docker-bin/
 
 # Frontend assets are built in CI and uploaded to the droplet
 /public/build

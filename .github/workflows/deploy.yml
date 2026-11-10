@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -92,15 +92,15 @@ jobs:
               exit 1
             fi
 
-            git pull origin master
+            git pull origin main
 
             rm -rf public/build-old
             mv public/build public/build-old
             mv public/build-new public/build
 
-            docker compose exec -T app php artisan migrate --force
-            docker compose exec -T app php artisan config:clear
-            docker compose exec -T app php artisan route:clear
+            php artisan migrate --force
+            php artisan config:clear
+            php artisan route:clear
 
             echo "Deployed commit: $(git rev-parse --short HEAD)"
             echo "Deployed manifest main entry:"
