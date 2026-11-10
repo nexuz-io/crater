@@ -16,6 +16,10 @@ Homestead.yaml
 /public/docs
 /.scribe
 !storage/fonts/.gitkeep
+
+# Local agent workspace plans (opencode/Copilot/Claude sessions, etc.)
+# Each developer keeps their own working notes here; never committed.
+/.agents/
 .DS_Store
 
 # Frontend assets are built in CI and uploaded to the droplet
@@ -25,3 +29,7 @@ Homestead.yaml
 # Each developer runs `php artisan ide-helper:generate` locally.
 _ide_helper.php
 .phpstorm.meta.php
+
+# Psy/psysh scratch files: tinker drops them in cwd when an
+# expression fails to parse (e.g. `pluck(key))`). Safe to ignore.
+pluck(*)
