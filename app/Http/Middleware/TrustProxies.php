@@ -4,6 +4,7 @@ namespace Crater\Http\Middleware;
 
 use Fideloper\Proxy\TrustProxies as Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 class TrustProxies extends Middleware
 {
@@ -19,5 +20,5 @@ class TrustProxies extends Middleware
      *
      * @var array
      */
-    protected $headers = Request::HEADER_X_FORWARDED_ALL;
+    protected $headers = SymfonyRequest::HEADER_X_FORWARDED_AWS_ELB;
 }

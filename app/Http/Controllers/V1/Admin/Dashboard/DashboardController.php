@@ -149,14 +149,23 @@ class DashboardController extends Controller
         $previous_year_net_income = (int)$previous_year_receipts - (int)$previous_year_expenses;
 
         $invoice_years = Invoice::whereCompany()
-            ->selectRaw('DISTINCT YEAR(invoice_date) as year')
-            ->pluck('year');
+            ->pluck('invoice_date')
+            ->map(fn ($d) => $d ? (int) $d->format('Y') : null)
+            ->filter()
+            ->unique()
+            ->values();
         $expense_years = Expense::whereCompany()
-            ->selectRaw('DISTINCT YEAR(expense_date) as year')
-            ->pluck('year');
+            ->pluck('expense_date')
+            ->map(fn ($d) => $d ? (int) $d->format('Y') : null)
+            ->filter()
+            ->unique()
+            ->values();
         $payment_years = Payment::whereCompany()
-            ->selectRaw('DISTINCT YEAR(payment_date) as year')
-            ->pluck('year');
+            ->pluck('payment_date')
+            ->map(fn ($d) => $d ? (int) $d->format('Y') : null)
+            ->filter()
+            ->unique()
+            ->values();
 
         $available_years = collect([$invoice_years, $expense_years, $payment_years])
             ->flatten()
