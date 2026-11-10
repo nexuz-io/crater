@@ -64,7 +64,7 @@
             </div>
           </TransitionChild>
 
-          <div class="flex flex-col flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+          <div class="sidebar-scroll flex flex-col flex-1 h-0 pt-5 pb-4 overflow-y-auto">
             <div class="flex items-center shrink-0 px-4 mb-6">
               <img
                 v-if="adminLogo"
@@ -207,7 +207,7 @@
         <CompanySwitcher :collapsed="isCollapsed" />
       </div>
 
-      <div class="flex-1 min-h-0 overflow-y-auto mt-6">
+      <div class="sidebar-scroll flex-1 min-h-0 overflow-y-auto mt-6">
         <nav class="space-y-1">
           <SidebarMenuItem
             v-for="item in mainMenuItems"
@@ -329,6 +329,35 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--color-chrome-muted), 0.5) rgb(var(--color-chrome));
+}
+
+.sidebar-scroll:hover,
+.sidebar-scroll:focus-within {
+  scrollbar-color: rgb(var(--color-chrome-muted)) rgb(var(--color-chrome));
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track,
+.sidebar-scroll::-webkit-scrollbar-corner {
+  background: rgb(var(--color-chrome));
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-chrome-muted), 0.5);
+  border-radius: 999px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-chrome-muted));
+}
+
 .site-sidebar {
   transition: width 0.3s ease;
 }
