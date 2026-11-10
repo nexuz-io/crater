@@ -26,8 +26,16 @@ class Company extends Model implements HasMedia
 
     public function getRolesAttribute()
     {
-        return Role::where('scope', $this->id)
-            ->get();
+        $scope = BouncerFacade::scope();
+        $previousScope = $scope->get();
+
+        try {
+            $scope->to($this->id);
+
+            return Role::where('scope', $this->id)->get();
+        } finally {
+            $scope->to($previousScope);
+        }
     }
 
     public function getLogoPathAttribute()

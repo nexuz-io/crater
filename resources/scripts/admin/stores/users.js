@@ -64,10 +64,10 @@ export const useUsersStore = (useWindow = false) => {
               this.userData = response.data.data
               if (this.userData?.companies?.length) {
                 this.userData.companies.forEach((c, i) => {
-                  this.userData.roles.forEach((r) => {
-                    if (r.scope === c.id)
+                  for (const r of this.userData.roles || []) {
+                    if (String(r.scope) === String(c.id))
                       this.userData.companies[i].role = r.name
-                  })
+                  }
                 })
               }
               resolve(response)

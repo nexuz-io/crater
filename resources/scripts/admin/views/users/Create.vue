@@ -76,7 +76,7 @@
 
             <div
               v-for="(company, i) in userStore.userData.companies"
-              :key="i"
+               :key="company.id"
               class="space-y-6"
             >
               <BaseInputGroup
@@ -100,7 +100,7 @@
                   autocomplete="off"
                   :content-loading="isFetchingInitialData"
                   label="name"
-                  :options="userStore.userData.companies[i].roles"
+                   :options="companies.find((item) => String(item.id) === String(company.id))?.roles || []"
                   :can-deselect="false"
                   :invalid="
                     companiesV$[i] &&
@@ -254,9 +254,9 @@ const companiesV$ = useVuelidate(
   userStore.userData.companies
 )
 
-loadInitialData()
-
 userStore.resetUserData()
+
+loadInitialData()
 
 async function loadInitialData() {
   isFetchingInitialData.value = true

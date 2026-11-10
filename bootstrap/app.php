@@ -66,6 +66,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Crater\Http\Middleware\Authenticate::class,
             \Illuminate\Session\Middleware\AuthenticateSession::class,
+            // Resolve tenant-scoped models only after selecting the user's company.
+            \Crater\Http\Middleware\CompanyMiddleware::class,
+            \Crater\Http\Middleware\ScopeBouncer::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \Illuminate\Auth\Middleware\Authorize::class,
         ]);
