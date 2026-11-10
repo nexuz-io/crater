@@ -76,37 +76,31 @@ class UpdateCustomerIdInAllTables extends Migration
             }
         }
 
-        Schema::table('estimates', function (Blueprint $table) {
-            if (config('database.default') !== 'sqlite') {
+        if (config('database.default') !== 'sqlite') {
+            Schema::table('estimates', function (Blueprint $table) {
                 $table->dropForeign(['user_id']);
-            }
-            $table->dropColumn('user_id');
-        });
+                $table->dropColumn('user_id');
+            });
 
-        Schema::table('expenses', function (Blueprint $table) {
-            if (config('database.default') !== 'sqlite') {
+            Schema::table('expenses', function (Blueprint $table) {
                 $table->dropForeign(['user_id']);
-            }
-            $table->dropColumn('user_id');
-        });
+                $table->dropColumn('user_id');
+            });
 
-        Schema::table('invoices', function (Blueprint $table) {
-            if (config('database.default') !== 'sqlite') {
+            Schema::table('invoices', function (Blueprint $table) {
                 $table->dropForeign(['user_id']);
-            }
-            $table->dropColumn('user_id');
-        });
+                $table->dropColumn('user_id');
+            });
 
-        Schema::table('payments', function (Blueprint $table) {
-            if (config('database.default') !== 'sqlite') {
+            Schema::table('payments', function (Blueprint $table) {
                 $table->dropForeign(['user_id']);
-            }
-            $table->dropColumn('user_id');
-        });
+                $table->dropColumn('user_id');
+            });
 
-        Schema::table('items', function (Blueprint $table) {
-            $table->dropColumn('unit');
-        });
+            Schema::table('items', function (Blueprint $table) {
+                $table->dropColumn('unit');
+            });
+        }
 
         $users = User::where('role', 'customer')
             ->delete();

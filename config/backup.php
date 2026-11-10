@@ -41,6 +41,12 @@ return [
                  * Determines if it should avoid unreadable folders.
                  */
                 'ignore_unreadable_directories' => false,
+
+                /*
+                 * Determines if the path is relative to the application's base path.
+                 * Defaults to `true`, which is the historical behaviour for spatie/laravel-backup v8 and earlier.
+                 */
+                'relative_path' => base_path(),
             ],
 
             /*

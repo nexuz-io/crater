@@ -36,7 +36,7 @@ class CloneEstimateController extends Controller
                 'estimate_expiry_date_days',
                 $request->header('company')
             );
-            $expiry_date = Carbon::now()->addDays($expiryDateDays)->format('Y-m-d');
+            $expiry_date = Carbon::now()->addDays((int) $expiryDateDays)->format('Y-m-d');
         }
 
         $exchange_rate = $estimate->exchange_rate;

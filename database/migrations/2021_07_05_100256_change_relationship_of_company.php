@@ -24,12 +24,12 @@ class ChangeRelationshipOfCompany extends Migration
             }
         }
 
-        Schema::table('users', function (Blueprint $table) {
-            if (config('database.default') !== 'sqlite') {
+        if (config('database.default') !== 'sqlite') {
+            Schema::table('users', function (Blueprint $table) {
                 $table->dropForeign(['company_id']);
-            }
-            $table->dropColumn('company_id');
-        });
+                $table->dropColumn('company_id');
+            });
+        }
     }
 
     /**
