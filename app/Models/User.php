@@ -87,7 +87,17 @@ class User extends Authenticatable implements HasMedia
 
     public function getFormattedCreatedAtAttribute($value)
     {
-        $dateFormat = CompanySetting::getSetting('carbon_date_format', request()->header('company'));
+        $companyId = request()->header('company');
+
+        if (! $companyId && $this->companies()->exists()) {
+            $companyId = $this->companies()->first()->id;
+        }
+
+        $dateFormat = CompanySetting::getSetting('carbon_date_format', $companyId);
+
+        if (! $dateFormat) {
+            $dateFormat = config('crater.company_default_settings.carbon_date_format', 'Y/m/d');
+        }
 
         return Carbon::parse($this->created_at)->format($dateFormat);
     }
