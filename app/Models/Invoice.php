@@ -43,6 +43,8 @@ class Invoice extends Model implements HasMedia
     ];
 
     protected $casts = [
+        'invoice_date' => 'date',
+        'due_date' => 'date',
         'total' => 'integer',
         'tax' => 'integer',
         'sub_total' => 'integer',

@@ -30,6 +30,7 @@ class Expense extends Model implements HasMedia
     ];
 
     protected $casts = [
+        'expense_date' => 'date',
         'notes' => 'string',
         'exchange_rate' => 'float'
     ];
