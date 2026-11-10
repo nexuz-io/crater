@@ -143,49 +143,15 @@ class ItemFamilyService
 
     /**
      * Returns the descendant ids of the given family within the
-     * company, BFS-traversed with a visited set to defend against
-     * any corrupt cycle that may have slipped in before the service
-     * existed. Includes the starting id itself so callers can adopt
-     * the "branch" semantics without a separate query.
+     * company. The BFS implementation lives on the model
+     * (`ItemFamily::descendantIds`) so it can be reached without a
+     * service-container binding; this method is a thin alias kept
+     * for symmetry with tests that called the service static before
+     * the move.
      */
     public static function descendantIds(int $familyId, int $companyId): array
     {
-        $collected = [$familyId];
-        $visited = [$familyId => true];
-
-        $current = [$familyId];
-
-        // Hard cap defends against pathological tree sizes; the
-        // controller still returns progress to the request loop.
-        $depth = 0;
-        $maxDepth = 128;
-
-        while (! empty($current) && $depth < $maxDepth) {
-            $children = DB::table('item_families')
-                ->where('company_id', $companyId)
-                ->whereIn('parent_id', $current)
-                ->pluck('id')
-                ->all();
-
-            $next = [];
-            foreach ($children as $childId) {
-                if (isset($visited[$childId])) {
-                    continue;
-                }
-                $visited[$childId] = true;
-                $collected[] = $childId;
-                $next[] = $childId;
-            }
-
-            if (empty($next)) {
-                break;
-            }
-
-            $current = $next;
-            $depth++;
-        }
-
-        return $collected;
+        return ItemFamily::descendantIds($familyId, $companyId);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Crater\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ItemFamily extends Model
@@ -116,5 +117,58 @@ class ItemFamily extends Model
         $clean = self::cleanName($name);
         $this->name = $clean;
         $this->name_normalized = self::normalizeName($clean);
+    }
+
+    /**
+     * Returns the descendant ids of the given family within the
+     * company, BFS-traversed with a visited set to defend against
+     * any corrupt cycle that may have slipped in before the service
+     * existed. Includes the starting id itself so callers can adopt
+     * the "branch" semantics without a separate query.
+     *
+     * Lives on the model (not the service) so consumers like
+     * `Item::scopeApplyFilters` can resolve it without seeding a
+     * service container binding. The service keeps a thin alias
+     * for symmetry and for tests that exercised the static before
+     * the move.
+     */
+    public static function descendantIds(int $familyId, int $companyId): array
+    {
+        $collected = [$familyId];
+        $visited = [$familyId => true];
+
+        $current = [$familyId];
+
+        // Hard cap defends against pathological tree sizes; the
+        // controller still returns progress to the request loop.
+        $depth = 0;
+        $maxDepth = 128;
+
+        while (! empty($current) && $depth < $maxDepth) {
+            $children = DB::table('item_families')
+                ->where('company_id', $companyId)
+                ->whereIn('parent_id', $current)
+                ->pluck('id')
+                ->all();
+
+            $next = [];
+            foreach ($children as $childId) {
+                if (isset($visited[$childId])) {
+                    continue;
+                }
+                $visited[$childId] = true;
+                $collected[] = $childId;
+                $next[] = $childId;
+            }
+
+            if (empty($next)) {
+                break;
+            }
+
+            $current = $next;
+            $depth++;
+        }
+
+        return $collected;
     }
 }

@@ -381,3 +381,39 @@ items.family_id is not null)`, `Service::delete()` corre sin SQL
 errors, y el `Helpful error: has services attached` ValidationException
 se dispara correctamente cuando hay items asociados. `php -l
 app/Models/ItemFamily.php` limpio.
+
+---
+
+## Parche posterior al cierre #4 (2026-11-10)
+
+Síntoma reportado: al aplicar el filtro `family_id` con
+`include_descendants` por defecto, `Call to undefined method
+Crater\Models\ItemFamily::descendantIds()`.
+
+Diagnóstico: el BFS vivía en `ItemFamilyService::descendantIds` (un
+`public static` correcto), pero `Item::scopeApplyFilters` lo llamaba
+como `ItemFamily::descendantIds(...)` — el docstring del scope y la
+documentación del plan incluso apuntan a la clase modelo,
+`ItemFamily::descendantIds`. La implementación nunca se movió:
+estaba en el servicio, llamada desde el sitio equivocado.
+
+Aplicado:
+
+- Añadida la implementación canónica (BFS con `visited` + cap de
+  profundidad) en `app/Models/ItemFamily.php` como
+  `public static function descendantIds(int $familyId, int $companyId)`
+  (el docstring explica la elección: vivir en el modelo evita que
+  `Item::scopeApplyFilters` necesite resolver un binding del
+  service container).
+- `app/Services/ItemFamilyService.php` redujó su
+  `descendantIds()` a thin alias que llama al método del modelo,
+  preservando compatibilidad con tests o callers que ya invocaban
+  la ruta en el servicio.
+
+Verificación: `php -l` limpio en los tres archivos tocados. Llamada
+directa devuelve `[1, 7]` para el árbol sembrado; el scope
+`Item::applyFilters(['family_id' => 1, 'include_descendants' => 1])`
+genera `select * from items where items.family_id in (?, ?)` con
+bindings `[1, 7]` (un único `whereIn` para toda la rama, según la
+decisión del plan). El alias del servicio sigue produciendo los
+mismos ids.
