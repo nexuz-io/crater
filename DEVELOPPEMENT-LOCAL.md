@@ -29,6 +29,26 @@ Il n'y a **pas** de flux `npm run dev` à utiliser. Pour voir une modification f
   démarrent MySQL/MariaDB automatiquement ; sinon la base SQLite
   (`database/database.sqlite`) suffit pour le développement.
 
+## Autocomplétion IDE (laravel-ide-helper)
+
+Le projet utilise [`barryvdh/laravel-ide-helper`](https://github.com/barryvdh/laravel-ide-helper)
+pour que PhpStorm / VS Code puisse autocompléter les facades, les modèles Eloquent,
+la config, etc. Les fichiers générés (`_ide_helper.php` et `.phpstorm.meta.php`)
+**ne sont pas versionnés** : ils doivent être régénérés localement après chaque
+`composer install` ou après avoir modifié un modèle / une migration :
+
+```bash
+php artisan ide-helper:generate        # génère _ide_helper.php
+php artisan ide-helper:models --nowrite # ajoute les PHPDoc aux modèles depuis la BD
+php artisan ide-helper:meta             # génère .phpstorm.meta.php (PhpStorm)
+```
+
+`ide-helper:generate` lit `composer.json` et `config/app.php`, donc il doit être
+lancé **depuis la racine du projet** après avoir installé les dépendances. Si
+l'IDE se plaint de méthodes manquantes sur des facades (`Cache::`, `Route::`,
+`Auth::user()`, etc.), c'est presque toujours que ces fichiers ne sont pas à
+jour — les régénérer règle le problème.
+
 ## Rebuild du frontend (nécessaire après toute modif JS/CSS)
 
 Le frontend se build avec **yarn** (le `yarn.lock` fait foi ; le `package-lock.json` présent est obsolète — ne pas utiliser `npm ci`, il échoue avec des erreurs ERESOLVE/lockfile incohérent).
