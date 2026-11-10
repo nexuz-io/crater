@@ -17,9 +17,9 @@ test('company setting belongs to company', function () {
 });
 
 test('set settings', function () {
-    $key = faker()->name;
+    $key = fake()->name;
 
-    $value = faker()->word;
+    $value = fake()->word;
 
     $company = Company::factory()->create();
 
@@ -31,9 +31,9 @@ test('set settings', function () {
 });
 
 test('get settings', function () {
-    $key = faker()->name;
+    $key = fake()->name;
 
-    $value = faker()->word;
+    $value = fake()->word;
 
     $company = Company::factory()->create();
 

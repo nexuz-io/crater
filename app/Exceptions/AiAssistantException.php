@@ -18,7 +18,7 @@ class AiAssistantException extends Exception
 
     public function __construct(string $message, int $status = 502)
     {
-        parent::__construct($message);
+        parent::__construct($message, $status);
 
         $this->status = $status;
     }

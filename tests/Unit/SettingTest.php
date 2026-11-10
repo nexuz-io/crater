@@ -10,9 +10,9 @@ beforeEach(function () {
 });
 
 test('set setting', function () {
-    $key = faker()->name;
+    $key = fake()->name;
 
-    $value = faker()->word;
+    $value = fake()->word;
 
     Setting::setSetting($key, $value);
 
