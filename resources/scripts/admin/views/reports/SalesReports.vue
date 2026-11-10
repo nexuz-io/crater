@@ -176,8 +176,8 @@ let customerSiteURL = ref(null)
 let itemsSiteURL = ref(null)
 
 let formData = reactive({
-  from_date: moment().startOf('month').format('YYYY-MM-DD').toString(),
-  to_date: moment().endOf('month').format('YYYY-MM-DD').toString(),
+  from_date: moment().startOf('month').format('YYYY-MM-DD'),
+  to_date: moment().endOf('month').format('YYYY-MM-DD'),
 })
 
 const companyStore = useCompanyStore()
@@ -205,8 +205,8 @@ const itemDaterangeUrl = computed(() => {
 })
 
 watch(range, (newRange) => {
-  formData.from_date = moment(newRange).startOf('year').toString()
-  formData.to_date = moment(newRange).endOf('year').toString()
+  formData.from_date = moment(newRange).startOf('year').format('YYYY-MM-DD')
+  formData.to_date = moment(newRange).endOf('year').format('YYYY-MM-DD')
 })
 
 onMounted(() => {

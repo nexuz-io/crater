@@ -13,10 +13,20 @@ class ReportPolicy
 
     public function viewReport(User $user, Company $company)
     {
-        if (BouncerFacade::can('view-financial-reports') && $user->hasCompany($company->id)) {
-            return true;
+        if (! $user->hasCompany($company->id)) {
+            return false;
         }
 
-        return false;
+        $scope = BouncerFacade::scope();
+        $previousScope = $scope->get();
+
+        try {
+            // PDF links identify the company by hash, without the API company header.
+            $scope->to($company->id);
+
+            return $user->can('view-financial-reports');
+        } finally {
+            $scope->to($previousScope);
+        }
     }
 }

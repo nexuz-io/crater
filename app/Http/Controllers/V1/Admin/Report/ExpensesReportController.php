@@ -23,7 +23,7 @@ class ExpensesReportController extends Controller
      */
     public function __invoke(Request $request, $hash)
     {
-        $company = Company::where('unique_hash', $hash)->first();
+        $company = Company::where('unique_hash', $hash)->firstOrFail();
 
         $this->authorize('view report', $company);
 

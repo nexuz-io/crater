@@ -143,8 +143,8 @@ const dateRange = reactive([
 const selectedRange = ref(dateRange[2])
 
 const formData = reactive({
-  from_date: moment().startOf('month').format('YYYY-MM-DD').toString(),
-  to_date: moment().endOf('month').format('YYYY-MM-DD').toString(),
+  from_date: moment().startOf('month').format('YYYY-MM-DD'),
+  to_date: moment().endOf('month').format('YYYY-MM-DD'),
 })
 
 let url = ref(null)
@@ -174,8 +174,8 @@ const dateRangeUrl = computed(() => {
 let range = ref(new Date())
 
 watch(range.value, (newRange) => {
-  formData.from_date = moment(newRange).startOf('year').toString()
-  formData.to_date = moment(newRange).endOf('year').toString()
+  formData.from_date = moment(newRange).startOf('year').format('YYYY-MM-DD')
+  formData.to_date = moment(newRange).endOf('year').format('YYYY-MM-DD')
 })
 
 function getThisDate(type, time) {
