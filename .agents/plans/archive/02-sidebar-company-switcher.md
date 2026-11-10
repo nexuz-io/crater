@@ -68,6 +68,50 @@ Reemplazar el logo de la aplicación en la cabecera del menú lateral por el sel
 
 ## Notas
 
-Estado: pendiente de implementación.
+Estado: cerrado 2026-11-10.
 
-Al completar los criterios, mover el plan a `/.agents/plans/archive/` según las convenciones de `.agents/README.md`.
+Implementado sobre `resources/scripts/components/CompanySwitcher.vue` y
+`resources/scripts/admin/layouts/partials/TheSiteSidebar.vue`. La cabecera
+única del sidebar es ahora el `CompanySwitcher`; los antiguos componentes
+`MainLogo`/`CraterMark`/`adminLogo` ya no se usan en este archivo.
+
+Resumen de cambios relevantes:
+
+- El disparador pasa de `<div @click>` a `<button type="button">` con
+  `aria-haspopup="menu"`, `aria-expanded` dinámico y panel asociado por
+  `aria-controls`/`id` (IDs únicos vía `useId()` de Vue 3.5).
+- Cada empresa del desplegable también es ahora un `<button>` y la fila
+  "Add new company" deja de ser un `<div>` clicable, así todo el menú
+  es navegable por teclado.
+- Escape cierra solo el desplegable (`stopPropagation`) sin que la primera
+  pulsación cierre también el `Dialog` móvil; el foco vuelve al disparador
+  mediante una función `closeAndFocus`.
+- El cierre del sidebar móvil se enlaza con un watcher sobre
+  `globalStore.isSidebarOpen` para que el menú no quede con foco obsoleto
+  al reabrir el drawer.
+- Avatar: fallback a iniciales si falla la imagen (`@error` +
+  `logoFailed`), con placeholder `BaseIcon name="BriefcaseIcon"` cuando
+  todavía no hay `selectedCompany`.
+- Posicionamiento en modo `collapsed`: `left-full ml-2 top-0` para que el
+  popup aparezca a la derecha del sidebar estrecho sin quedar recortado;
+  en expandido y móvil se mantiene `left-0 mt-2`.
+- Restructuración del drawer móvil: cabecera siempre visible (fuera del
+  scroll), navegación en su propio contenedor con scroll. Sin cambios en
+  el botón de cierre.
+- Botón de colapso del sidebar: `top-10`/`top-12` según modo (antes
+  `top-36`), alineado a la nueva cabecera.
+- Eliminados de `TheSiteSidebar.vue`: imports `MainLogo`, `CraterMark`
+  y el computado `adminLogo` (sin más consumidores en este archivo).
+- Sin nuevas claves de i18n: se reutiliza `company_switcher.label`
+  como `aria-label` del disparador y como cabecera del popup.
+
+Verificación:
+
+- `npm run build` desde `resources/scripts/`: compila sin errores ni
+  warnings nuevos.
+- `npm run test` (lint del proyecto): limpio sobre los dos archivos
+  modificados (los warnings/errors restantes son preexistentes del repo).
+- IDs únicos generados en el bundle: `company-switcher-trigger-*` /
+  `company-switcher-panel-*`.
+- Parte visual responsive: pendiente de inspección manual en navegador
+  (320 / 375 / 768 px + breakpoint `md`, zoom 200 %, listas largas).

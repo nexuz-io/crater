@@ -37,8 +37,9 @@
             leave-from="opacity-100"
             leave-to="opacity-0"
           >
-            <div class="absolute top-0 right-0 pt-2 -mr-12">
+            <div class="absolute top-0 right-0 pt-2 -mr-12 z-10">
               <button
+                type="button"
                 class="
                   flex
                   items-center
@@ -64,28 +65,18 @@
             </div>
           </TransitionChild>
 
-          <div class="sidebar-scroll flex flex-col flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-            <div class="flex items-center shrink-0 px-4 mb-6">
-              <img
-                v-if="adminLogo"
-                :src="adminLogo"
-                class="block h-auto max-w-full w-36"
-                alt="Logo"
-              />
-              <MainLogo
-                v-else
-                class="block h-auto max-w-full w-36"
-                light-color="white"
-                dark-color="white"
-                alt="Logo"
-              />
-            </div>
+          <!--
+            Header: company switcher. Kept outside the scroll container so it
+            stays visible while the navigation scrolls, and the dialog close
+            button remains reachable at the top-right.
+          -->
+          <div class="px-4 pt-5 shrink-0">
+            <CompanySwitcher />
+          </div>
 
-            <div class="px-4 mb-6">
-              <CompanySwitcher />
-            </div>
-
-            <nav class="flex-1 px-2 space-y-1">
+          <!-- Scroll container: only the navigation scrolls. -->
+          <div class="sidebar-scroll flex-1 min-h-0 overflow-y-auto px-2 pt-6 pb-4">
+            <nav class="space-y-1">
               <SidebarMenuItem
                 v-for="item in mainMenuItems"
                 :key="item.name"
@@ -95,7 +86,7 @@
               />
             </nav>
 
-            <nav class="px-2 mt-4 space-y-1">
+            <nav class="mt-6 space-y-1">
               <SidebarMenuItem
                 v-for="item in bottomMenuItems"
                 :key="item.name"
@@ -104,7 +95,7 @@
               />
             </nav>
 
-            <div class="px-4 mt-4">
+            <div class="mt-6">
               <SidebarUserCard />
             </div>
           </div>
@@ -132,12 +123,13 @@
     <button
       type="button"
       :title="
-        isCollapsed ? $t('navigation.expand_sidebar') : $t('navigation.collapse_sidebar')
+        isCollapsed
+          ? $t('navigation.expand_sidebar')
+          : $t('navigation.collapse_sidebar')
       "
       class="
         sidebar-collapse-toggle
         absolute
-        top-36
         z-20
         flex
         items-center
@@ -153,6 +145,7 @@
         hover:text-chrome-fg
         focus:outline-none
       "
+      :class="isCollapsed ? 'top-10' : 'top-12'"
       @click="globalStore.toggleSidebarCollapsed()"
     >
       <svg
@@ -183,30 +176,10 @@
       class="flex flex-col flex-1 pt-5 pb-4 min-h-0"
       :class="isCollapsed ? 'px-2' : 'px-4'"
     >
-      <!-- brand block -->
-      <router-link
-        to="/admin/dashboard"
-        class="flex items-center shrink-0 h-8 overflow-hidden"
-        :class="isCollapsed ? 'justify-center' : 'px-1'"
-      >
-        <img v-if="adminLogo" :src="adminLogo" class="block h-6 max-w-full" alt="Logo" />
-        <CraterMark
-          v-else-if="isCollapsed"
-          class="block h-8 w-8"
-        />
-        <MainLogo
-          v-else
-          class="block h-6 max-w-full"
-          light-color="white"
-          dark-color="white"
-          alt="Logo"
-        />
-      </router-link>
+      <!-- Header: company switcher acts as the sidebar brand. -->
+      <CompanySwitcher :collapsed="isCollapsed" />
 
-      <div class="mt-5">
-        <CompanySwitcher :collapsed="isCollapsed" />
-      </div>
-
+      <!-- Scrollable navigation area. -->
       <div class="sidebar-scroll flex-1 min-h-0 overflow-y-auto mt-6">
         <nav class="space-y-1">
           <SidebarMenuItem
@@ -238,8 +211,6 @@
 <script setup>
 import { computed, onMounted, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import MainLogo from '@/scripts/components/icons/MainLogo.vue'
-import CraterMark from '@/scripts/components/icons/CraterMark.vue'
 import CompanySwitcher from '@/scripts/components/CompanySwitcher.vue'
 import SidebarMenuItem from '@/scripts/admin/layouts/partials/SidebarMenuItem.vue'
 import SidebarUserCard from '@/scripts/admin/layouts/partials/SidebarUserCard.vue'
@@ -263,14 +234,6 @@ const notificationStore = useNotificationStore()
 
 const isCollapsed = computed(() => globalStore.isSidebarCollapsed)
 
-const adminLogo = computed(() => {
-  if (globalStore.globalSettings.admin_portal_logo) {
-    return '/storage/' + globalStore.globalSettings.admin_portal_logo
-  }
-
-  return false
-})
-
 const BOTTOM_MENU_NAMES = ['Users', 'Reports', 'Settings']
 
 const mainMenuItems = computed(() => {
@@ -291,10 +254,6 @@ const bottomMenuItems = computed(() => {
     BOTTOM_MENU_NAMES.includes(item.name)
   )
 })
-
-function hasActiveUrl(url) {
-  return route.path.indexOf(url) > -1
-}
 
 // Sidebar badge counts: loaded once (the dashboard page loads the full
 // data itself) and refreshed live when items are created or removed —
@@ -373,4 +332,3 @@ onMounted(() => {
   pointer-events: auto;
 }
 </style>
-

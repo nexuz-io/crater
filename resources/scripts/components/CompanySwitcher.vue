@@ -2,13 +2,27 @@
   <div ref="companySwitchBar" class="relative rounded-lg">
     <CompanyModal />
 
-    <div
-      :title="collapsed && companyStore.selectedCompany ? companyStore.selectedCompany.name : null"
+    <button
+      :id="triggerId"
+      ref="triggerRef"
+      type="button"
+      :aria-label="$t('company_switcher.label')"
+      :aria-haspopup="'menu'"
+      :aria-expanded="isShow ? 'true' : 'false'"
+      :aria-controls="panelId"
+      :title="
+        companyStore.selectedCompany && collapsed
+          ? companyStore.selectedCompany.name
+          : null
+      "
       :class="[
-        'flex items-center w-full px-2.5 py-2 text-sm bg-white bg-opacity-[0.07] rounded-lg cursor-pointer hover:bg-opacity-[0.13] transition-colors',
+        'group flex items-center w-full px-2.5 py-2 text-sm rounded-lg cursor-pointer transition-colors',
+        'bg-white bg-opacity-[0.07] hover:bg-opacity-[0.13]',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400',
         collapsed ? 'justify-center' : '',
       ]"
-      @click="isShow = !isShow"
+      @click="toggleDropdown"
+      @keydown.esc="handleTriggerEscape"
     >
       <span
         v-if="companyStore.selectedCompany"
@@ -27,7 +41,7 @@
           text-chrome-accent
         "
       >
-        <span v-if="!companyStore.selectedCompany.logo">
+        <span v-if="!companyStore.selectedCompany.logo || logoFailed">
           {{ initGenerator(companyStore.selectedCompany.name) }}
         </span>
         <img
@@ -35,7 +49,27 @@
           :src="companyStore.selectedCompany.logo"
           alt="Company logo"
           class="w-full h-full object-contain"
+          @error="logoFailed = true"
         />
+      </span>
+
+      <span
+        v-else
+        class="
+          flex
+          items-center
+          justify-center
+          shrink-0
+          overflow-hidden
+          bg-chrome-raised
+          rounded-md
+          w-9
+          h-9
+          text-chrome-muted
+        "
+        aria-hidden="true"
+      >
+        <BaseIcon name="BriefcaseIcon" class="h-5 w-5" />
       </span>
 
       <span
@@ -50,7 +84,7 @@
         name="ChevronDownIcon"
         class="h-5 ml-2 shrink-0 text-chrome-muted"
       />
-    </div>
+    </button>
 
     <transition
       enter-active-class="transition duration-200 ease-out"
@@ -62,7 +96,25 @@
     >
       <div
         v-if="isShow"
-        class="absolute left-0 z-30 mt-2 bg-surface rounded-lg border border-line-light shadow-card"
+        :id="panelId"
+        ref="panelRef"
+        role="menu"
+        tabindex="-1"
+        :aria-labelledby="triggerId"
+        class="
+          absolute
+          z-30
+          bg-surface
+          rounded-lg
+          border border-line-light
+          shadow-card
+        "
+        :class="
+          collapsed
+            ? 'top-0 left-full ml-2 mt-0 w-[260px]'
+            : 'left-0 right-auto mt-2 w-[260px]'
+        "
+        @keydown.esc="handlePanelEscape"
       >
         <div
           class="
@@ -70,7 +122,7 @@
             scrollbar-thin scrollbar-thumb-rounded-full
             w-full
             min-w-[200px]
-            max-h-[350px]
+            max-h-[60vh]
             scrollbar-thumb-gray-300 scrollbar-track-gray-10
             pb-2
           "
@@ -91,7 +143,7 @@
           </label>
 
           <div
-            v-if="companyStore.companies.length < 1"
+            v-if="!companyStore.companies.length"
             class="
               flex flex-col
               items-center
@@ -105,75 +157,98 @@
             <BaseIcon name="ExclamationCircleIcon" class="h-5 text-gray-400" />
             {{ $t('company_switcher.no_results_found') }}
           </div>
-          <div v-else>
-            <div v-if="companyStore.companies.length > 0">
-              <div
-                v-for="(company, index) in companyStore.companies"
-                :key="index"
+          <div v-else class="pt-1">
+            <button
+              v-for="company in companyStore.companies"
+              :key="company.id"
+              type="button"
+              role="menuitem"
+              tabindex="0"
+              :aria-current="
+                companyStore.selectedCompany &&
+                companyStore.selectedCompany.id === company.id
+                  ? 'true'
+                  : 'false'
+              "
+              class="
+                flex
+                items-center
+                w-full
+                mx-1.5
+                p-2
+                px-2
+                rounded-md
+                cursor-pointer
+                hover:bg-gray-100
+                focus:bg-gray-100
+                focus:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-primary-400
+              "
+              :class="
+                companyStore.selectedCompany &&
+                companyStore.selectedCompany.id === company.id
+                  ? 'bg-surface-secondary'
+                  : ''
+              "
+              @click="changeCompany(company)"
+            >
+              <span
                 class="
                   flex
                   items-center
-                  mx-1.5
-                  p-2
-                  px-2
+                  justify-center
+                  mr-3
+                  overflow-hidden
+                  text-base
+                  font-semibold
+                  bg-gray-200
                   rounded-md
-                  cursor-pointer
-                  hover:bg-gray-100
+                  w-9
+                  h-9
+                  text-primary-500
                 "
-                :class="{
-                  'bg-surface-secondary':
-                    companyStore.selectedCompany.id === company.id,
-                }"
-                @click="changeCompany(company)"
               >
-                <span
-                  class="
-                    flex
-                    items-center
-                    justify-center
-                    mr-3
-                    overflow-hidden
-                    text-base
-                    font-semibold
-                    bg-gray-200
-                    rounded-md
-                    w-9
-                    h-9
-                    text-primary-500
-                  "
-                >
-                  <span v-if="!company.logo">
-                    {{ initGenerator(company.name) }}
-                  </span>
-                  <img
-                    v-else
-                    :src="company.logo"
-                    alt="Company logo"
-                    class="w-full h-full object-contain"
-                  />
+                <span v-if="!company.logo">
+                  {{ initGenerator(company.name) }}
                 </span>
-                <div class="flex flex-col">
-                  <span class="text-sm text-gray-900">{{ company.name }}</span>
-                </div>
-                <BaseIcon
-                  v-if="companyStore.selectedCompany.id === company.id"
-                  name="CheckIcon"
-                  class="h-5 ml-auto text-primary-500"
+                <img
+                  v-else
+                  :src="company.logo"
+                  alt="Company logo"
+                  class="w-full h-full object-contain"
                 />
+              </span>
+              <div class="flex flex-col min-w-0">
+                <span class="text-sm text-gray-900 truncate">
+                  {{ company.name }}
+                </span>
               </div>
-            </div>
+              <BaseIcon
+                v-if="
+                  companyStore.selectedCompany &&
+                  companyStore.selectedCompany.id === company.id
+                "
+                name="CheckIcon"
+                class="h-5 ml-auto shrink-0 text-primary-500"
+              />
+            </button>
           </div>
         </div>
-        <div
-          v-if="userStore.currentUser.is_owner"
+        <button
+          v-if="userStore.currentUser && userStore.currentUser.is_owner"
+          type="button"
           class="
             flex
             items-center
+            w-full
             p-3
             border-t border-gray-100
             cursor-pointer
             text-primary-400
             hover:text-primary-500
+            focus:outline-none
+            focus-visible:bg-gray-50
           "
           @click="addNewCompany"
         >
@@ -182,20 +257,21 @@
           <span class="font-medium">
             {{ $t('company_switcher.add_new_company') }}
           </span>
-        </div>
+        </button>
       </div>
     </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
+import { useId } from 'vue'
 import { useCompanyStore } from '@/scripts/admin/stores/company'
 import { onClickOutside } from '@vueuse/core'
 import { useRoute, useRouter } from 'vue-router'
-import { useModalStore } from '../stores/modal'
+import { useModalStore } from '@/scripts/stores/modal'
 import { useI18n } from 'vue-i18n'
-import { useGlobalStore } from '@/scripts/admin//stores/global'
+import { useGlobalStore } from '@/scripts/admin/stores/global'
 import { useUserStore } from '@/scripts/admin/stores/user'
 
 import CompanyModal from '@/scripts/admin/components/modal-components/CompanyModal.vue'
@@ -204,6 +280,12 @@ defineProps({
   collapsed: { type: Boolean, default: false },
 })
 
+// Unique IDs shared by the trigger button (`aria-controls`) and the panel.
+// Both must point at the same element so assistive tech can associate them.
+const uid = useId()
+const triggerId = `company-switcher-trigger-${uid}`
+const panelId = `company-switcher-panel-${uid}`
+
 const companyStore = useCompanyStore()
 const modalStore = useModalStore()
 const route = useRoute()
@@ -211,25 +293,90 @@ const router = useRouter()
 const globalStore = useGlobalStore()
 const { t } = useI18n()
 const userStore = useUserStore()
-const isShow = ref(false)
-const name = ref('')
-const companySwitchBar = ref(null)
 
-watch(route, () => {
+const isShow = ref(false)
+// Tracks when the active company's logo URL fails to load, so we fall back to
+// initials instead of an empty avatar box. Reset between company switches.
+const logoFailed = ref(false)
+const companySwitchBar = ref(null)
+const triggerRef = ref(null)
+const panelRef = ref(null)
+
+function toggleDropdown() {
+  isShow.value = !isShow.value
+  if (isShow.value) {
+    logoFailed.value = false
+    nextTick(() => {
+      panelRef.value?.focus({ preventScroll: true })
+    })
+  }
+}
+
+function closeAndFocus() {
   isShow.value = false
-  name.value = ''
-})
+  nextTick(() => {
+    triggerRef.value?.focus({ preventScroll: true })
+  })
+}
+
+// Escape on either the trigger button or anywhere inside the panel closes the
+// dropdown. Without the conditional stop, pressing Escape with the panel open
+// would also close the mobile Dialog. We only consume the keystroke while the
+// panel is actually open so a second Escape can still dismiss the panel above.
+function handleTriggerEscape(e) {
+  if (!isShow.value) return
+  e.stopPropagation()
+  e.preventDefault()
+  closeAndFocus()
+}
+
+function handlePanelEscape(e) {
+  if (!isShow.value) return
+  e.stopPropagation()
+  e.preventDefault()
+  closeAndFocus()
+}
+
+watch(
+  () => companyStore.selectedCompany?.logo,
+  () => {
+    logoFailed.value = false
+  }
+)
+
+watch(
+  () => companyStore.selectedCompany?.id,
+  () => {
+    logoFailed.value = false
+    isShow.value = false
+  }
+)
+
+// Any navigation hides the menu so the next interaction starts clean.
+watch(
+  () => route.fullPath,
+  () => {
+    isShow.value = false
+  }
+)
+
+// Closing the mobile drawer should always hide the menu so it does not
+// reappear with stale focus the next time the drawer opens.
+watch(
+  () => globalStore.isSidebarOpen,
+  (open) => {
+    if (!open) isShow.value = false
+  }
+)
 
 onClickOutside(companySwitchBar, () => {
   isShow.value = false
 })
 
 function initGenerator(name) {
-  if (name) {
-    const nameSplit = name.split(' ')
-    const initials = nameSplit[0].charAt(0).toUpperCase()
-    return initials
-  }
+  if (!name) return ''
+  const firstWord = name.trim().split(/\s+/)[0] || ''
+  return firstWord.charAt(0).toUpperCase()
 }
 
 function addNewCompany() {
@@ -241,6 +388,7 @@ function addNewCompany() {
 }
 
 async function changeCompany(company) {
+  isShow.value = false
   await companyStore.setSelectedCompany(company)
   router.push('/admin/dashboard')
   await globalStore.setIsAppLoaded(false)
