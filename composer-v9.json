@@ -1,0 +1,91 @@
+{
+  "name": "crater-invoice/crater",
+  "description": "Free & Open Source Invoice App for Individuals & Small Businesses. https://craterapp.com",
+  "keywords": [
+    "framework",
+    "laravel"
+  ],
+  "license": "MIT",
+  "type": "project",
+  "require": {
+    "php": "^8.0",
+    "aws/aws-sdk-php": "^3.142",
+    "barryvdh/laravel-dompdf": "^1.0|^2.0",
+    "crater-invoice/modules": "^1.0.0",
+    "doctrine/dbal": "^2.10|^3.0",
+    "dragonmantank/cron-expression": "^3.1",
+    "fideloper/proxy": "^4.4",
+    "guzzlehttp/guzzle": "^7.0.1",
+    "innocenzi/laravel-vite": "^0.1.1",
+    "intervention/image": "^2.7",
+    "jasonmccreary/laravel-test-assertions": "^2.0",
+    "laravel/framework": "^9.0",
+    "laravel/sanctum": "^2.9|^3.0",
+    "laravel/tinker": "^2.5",
+    "laravel/ui": "^3.4",
+    "lavary/laravel-menu": "^1.8",
+    "league/flysystem-aws-s3-v3": "^3.0",
+    "predis/predis": "^1.1",
+    "silber/bouncer": "^1.5|^2.0",
+    "spatie/flysystem-dropbox": "^2.0",
+    "spatie/laravel-backup": "^7.0|^8.0",
+    "spatie/laravel-medialibrary": "^9.0|^10.0",
+    "vinkla/hashids": "^10.0"
+  },
+  "require-dev": {
+    "barryvdh/laravel-ide-helper": "^2.6",
+    "facade/ignition": "^2.5",
+    "friendsofphp/php-cs-fixer": "^3.8",
+    "fakerphp/faker": "^1.9.1",
+    "mockery/mockery": "^1.3.1",
+    "nunomaduro/collision": "^6.1",
+    "pestphp/pest": "^1.22",
+    "pestphp/pest-plugin-faker": "^1.0",
+    "pestphp/pest-plugin-laravel": "^1.1",
+    "pestphp/pest-plugin-parallel": "^0.3.1",
+    "phpunit/phpunit": "^9.5.10"
+  },
+  "autoload": {
+    "psr-4": {
+      "Crater\\": "app/",
+      "Database\\Factories\\": "database/factories/",
+      "Database\\Seeders\\": "database/seeders/",
+      "Modules\\": "Modules/"
+    },
+    "files": [
+      "app/Space/helpers.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "scripts": {
+    "post-autoload-dump": [
+      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+      "@php artisan package:discover --ansi"
+    ],
+    "post-root-package-install": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
+    "post-create-project-cmd": [
+      "@php artisan key:generate --ansi"
+    ]
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "extra": {
+    "laravel": {
+      "dont-discover": []
+    }
+  }
+}
