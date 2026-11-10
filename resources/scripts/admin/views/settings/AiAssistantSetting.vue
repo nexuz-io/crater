@@ -136,7 +136,7 @@ import { useI18n } from 'vue-i18n'
 import { handleError } from '@/scripts/helpers/error-handling'
 import { useNotificationStore } from '@/scripts/stores/notification'
 
-const { t, global } = useI18n()
+const { t } = useI18n()
 
 const notificationStore = useNotificationStore()
 
@@ -226,7 +226,7 @@ async function saveSettings() {
 
     notificationStore.showNotification({
       type: 'success',
-      message: global.t('settings.ai_assistant.saved'),
+      message: t('settings.ai_assistant.saved'),
     })
   } catch (err) {
     // Server errors (validation, authorization) come back in French and

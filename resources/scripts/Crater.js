@@ -42,6 +42,8 @@ export default class Crater {
       locale: 'en',
       fallbackLocale: 'en',
       globalInjection: true,
+      // Script setup calls useI18n() while $t stays on the legacy global.
+      allowComposition: true,
       messages: this.messages,
     })
 
