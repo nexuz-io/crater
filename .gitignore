@@ -15,6 +15,11 @@ Homestead.yaml
 /.expo
 /.vscode
 .gitkeep
+# Plan 09 F0 (PR-01): folder placeholders that travel with the repo so the
+# Contracts/Services/DataObjects namespaces exist before any real class does.
+!/app/Contracts/Documents/.gitkeep
+!/app/Services/Documents/.gitkeep
+!/app/DataObjects/Documents/.gitkeep
 /public/docs
 /.scribe
 !storage/fonts/.gitkeep
