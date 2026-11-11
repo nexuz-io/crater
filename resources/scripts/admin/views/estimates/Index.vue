@@ -17,6 +17,8 @@
         <BaseButton
           v-show="estimateStore.totalEstimateCount"
           variant="primary-outline"
+          :aria-expanded="showFilters ? 'true' : 'false'"
+          aria-controls="estimate-filter-wrapper"
           @click="toggleFilter"
         >
           {{ $t('general.filter') }}
@@ -45,8 +47,12 @@
     </BasePageHeader>
 
     <BaseFilterWrapper
-      v-show="showFilters"
-      :row-on-xl="true"
+      id="estimate-filter-wrapper"
+      :show="showFilters"
+      class="mt-5"
+      cols="auto"
+      gap="md"
+      aria-label="Estimate filters"
       @clear="clearFilter"
     >
       <BaseInputGroup :label="$tc('customers.customer', 1)">
@@ -75,11 +81,6 @@
           calendar-button-icon="calendar"
         />
       </BaseInputGroup>
-
-      <div
-        class="hidden w-8 h-0 mx-4 border border-gray-400 border-solid xl:block"
-        style="margin-top: 1.5rem"
-      />
 
       <BaseInputGroup :label="$t('general.to')">
         <BaseDatePicker

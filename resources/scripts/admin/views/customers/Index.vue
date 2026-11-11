@@ -16,6 +16,8 @@
           <BaseButton
             v-show="customerStore.totalCustomers"
             variant="primary-outline"
+            :aria-expanded="showFilters ? 'true' : 'false'"
+            aria-controls="customer-filter-wrapper"
             @click="toggleFilter"
           >
             {{ $t('general.filter') }}
@@ -42,8 +44,16 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper :show="showFilters" class="mt-5" @clear="clearFilter">
-      <BaseInputGroup :label="$t('customers.display_name')" class="text-left">
+    <BaseFilterWrapper
+      id="customer-filter-wrapper"
+      :show="showFilters"
+      class="mt-5"
+      cols="auto"
+      gap="md"
+      aria-label="Customer filters"
+      @clear="clearFilter"
+    >
+      <BaseInputGroup :label="$t('customers.display_name')">
         <BaseInput
           v-model="filters.display_name"
           type="text"
@@ -52,7 +62,7 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('customers.contact_name')" class="text-left">
+      <BaseInputGroup :label="$t('customers.contact_name')">
         <BaseInput
           v-model="filters.contact_name"
           type="text"
@@ -61,7 +71,7 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('customers.phone')" class="text-left">
+      <BaseInputGroup :label="$t('customers.phone')">
         <BaseInput
           v-model="filters.phone"
           type="text"
@@ -196,7 +206,6 @@
 
 <script setup>
 import { debouncedWatch } from '@vueuse/core'
-import moment from 'moment'
 import { reactive, ref, inject, computed, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useCustomerStore } from '@/scripts/admin/stores/customer'
@@ -339,10 +348,6 @@ function toggleFilter() {
 
   showFilters.value = !showFilters.value
 }
-
-let date = ref(new Date())
-
-date.value = moment(date).format('YYYY-MM-DD')
 
 function removeMultipleCustomers() {
   dialogStore

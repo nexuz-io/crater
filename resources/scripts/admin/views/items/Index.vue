@@ -59,8 +59,19 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper :show="showFilters" class="mt-5" @clear="clearFilter">
-      <BaseInputGroup :label="$t('items.service_name')" class="text-left">
+    <BaseFilterWrapper
+      :show="showFilters"
+      class="mt-5"
+      cols="auto-8-6"
+      gap="md"
+      @clear="clearFilter"
+    >
+      <!-- 1 · Búsqueda global: backend ahora busca en name + description
+           (tokenizado por espacios). El campo se ensancha a span=3
+           para acomodar el placeholder extendido sin truncar el
+           texto y dejar mejor proporción visual junto a los
+           selectores adyacentes. -->
+      <BaseInputGroup :label="$t('items.search')" :span="3">
         <BaseInput
           v-model="filters.name"
           type="text"
@@ -69,7 +80,7 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$tc('items.unit')" class="text-left">
+      <BaseInputGroup :label="$tc('items.unit')">
         <BaseMultiselect
           v-model="filters.unit_id"
           :placeholder="$t('items.select_a_unit')"
@@ -85,11 +96,7 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup class="text-left" :label="$t('items.unit_price')">
-        <BaseMoney v-model="filters.price" />
-      </BaseInputGroup>
-
-      <BaseInputGroup class="text-left" :label="$t('items.service_status')">
+      <BaseInputGroup :label="$t('items.service_status')">
         <BaseMultiselect
           v-model="filters.active"
           value-prop="value"
@@ -102,7 +109,8 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('items.brand')" class="text-left">
+      <!-- 2 · Marca + Familia + Precio -->
+      <BaseInputGroup :label="$t('items.brand')">
         <BaseMultiselect
           v-model="filters.brand_id"
           :placeholder="$t('items.select_a_brand')"
@@ -121,14 +129,7 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup class="text-left" :label="$t('brands.filter_without_brand')">
-        <BaseSwitch
-          :model-value="filters.without_brand"
-          @update:model-value="toggleWithoutBrand"
-        />
-      </BaseInputGroup>
-
-      <BaseInputGroup :label="$t('items.family')" class="text-left">
+      <BaseInputGroup :label="$t('items.family')">
         <BaseMultiselect
           v-model="filters.family_id"
           :placeholder="$t('items.select_a_family')"
@@ -147,18 +148,32 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup class="text-left" :label="$t('item_families.include_descendants')">
+      <BaseInputGroup :label="$t('items.unit_price')">
+        <BaseMoney v-model="filters.price" />
+      </BaseInputGroup>
+
+      <!-- 3 · Toggles mutuamente excluyentes + Descendientes -->
+      <BaseInputGroup :label="$t('brands.filter_without_brand')">
         <BaseSwitch
-          v-show="filters.family_id"
-          :model-value="filters.include_descendants"
-          @update:model-value="toggleIncludeDescendants"
+          :model-value="filters.without_brand"
+          @update:model-value="toggleWithoutBrand"
         />
       </BaseInputGroup>
 
-      <BaseInputGroup class="text-left" :label="$t('item_families.without_family')">
+      <BaseInputGroup :label="$t('item_families.without_family')">
         <BaseSwitch
           :model-value="filters.without_family"
           @update:model-value="toggleWithoutFamily"
+        />
+      </BaseInputGroup>
+
+      <BaseInputGroup
+        v-show="filters.family_id"
+        :label="$t('item_families.include_descendants')"
+      >
+        <BaseSwitch
+          :model-value="filters.include_descendants"
+          @update:model-value="toggleIncludeDescendants"
         />
       </BaseInputGroup>
     </BaseFilterWrapper>
@@ -572,10 +587,19 @@ const familyCache = computed(() => {
 })
 
 async function fetchData({ page, filter, sort }) {
+  // Guard against the empty-string case: `Math.round('' * 100) === 0`,
+  // so a cleared price would otherwise be sent as `0` and the backend
+  // scopeApplyFilters would filter items whose price is exactly 0
+  // instead of returning the unfiltered list.
+  const normalisedPrice =
+    filters.price === '' || filters.price == null
+      ? ''
+      : Math.round(Number(filters.price) * 100)
+
   let data = {
     search: filters.name,
     unit_id: filters.unit_id !== null ? filters.unit_id : '',
-    price: Math.round(filters.price * 100),
+    price: normalisedPrice,
     active: filters.active !== '' && filters.active !== null && filters.active !== undefined ? filters.active : '',
     brand_id: filters.brand_id !== null && filters.brand_id !== '' ? filters.brand_id : '',
     without_brand: filters.without_brand ? '1' : '',

@@ -11,6 +11,8 @@
         <BaseButton
           v-show="paymentStore.paymentTotalCount"
           variant="primary-outline"
+          :aria-expanded="showFilters ? 'true' : 'false'"
+          aria-controls="payment-filter-wrapper"
           @click="toggleFilter"
         >
           {{ $t('general.filter') }}
@@ -40,7 +42,15 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper :show="showFilters" class="mt-3" @clear="clearFilter">
+    <BaseFilterWrapper
+      id="payment-filter-wrapper"
+      :show="showFilters"
+      class="mt-3"
+      cols="auto"
+      gap="md"
+      aria-label="Payment filters"
+      @clear="clearFilter"
+    >
       <BaseInputGroup :label="$t('payments.customer')">
         <BaseCustomerSelectInput
           v-model="filters.customer_id"
@@ -220,7 +230,7 @@ let isFetchingInitialData = ref(true)
 let tableComponent = ref(null)
 
 const filters = reactive({
-  customer: '',
+  customer_id: '',
   payment_mode: '',
   payment_number: '',
 })

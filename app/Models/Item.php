@@ -54,7 +54,18 @@ class Item extends Model
 
     public function scopeWhereSearch($query, $search)
     {
-        return $query->where('items.name', 'LIKE', '%'.$search.'%');
+        // Tokenize the search input so each space-separated term must
+        // appear within one of the searchable columns. Mirrors the
+        // pattern used by Customer / Invoice so the consumer-facing
+        // "find" field behaves consistently across listings.
+        foreach (explode(' ', $search) as $term) {
+            $query->where(function ($query) use ($term) {
+                $query->where('items.name', 'LIKE', '%'.$term.'%')
+                    ->orWhere('items.description', 'LIKE', '%'.$term.'%');
+            });
+        }
+
+        return $query;
     }
 
     public function scopeWherePrice($query, $price)

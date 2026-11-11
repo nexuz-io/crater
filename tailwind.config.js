@@ -19,6 +19,21 @@ module.exports = {
     './resources/scripts/**/*.js',
     './resources/scripts/**/*.vue',
   ],
+  safelist: [
+    // The BaseFilterWrapper emits grid column counts as runtime
+    // interpolations (e.g. `xl:grid-cols-${xlCols}`). Tailwind's JIT
+    // scanner cannot resolve those at build time, so we explictly
+    // safelist the full grid-cols surface used by the wrapper so the
+    // styles are always emitted. Counts 1..12 cover everything the
+    // wrapper may request; the responsive variants cover md/lg/xl
+    // breakpoints.
+    ...Array.from({ length: 12 }, (_, i) => i + 1).flatMap((n) => [
+      `grid-cols-${n}`,
+      `md:grid-cols-${n}`,
+      `lg:grid-cols-${n}`,
+      `xl:grid-cols-${n}`,
+    ]),
+  ],
   theme: {
     extend: {
       colors: {

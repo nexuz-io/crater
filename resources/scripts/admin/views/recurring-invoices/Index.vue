@@ -17,6 +17,8 @@
         <BaseButton
           v-show="recurringInvoiceStore.totalRecurringInvoices"
           variant="primary-outline"
+          :aria-expanded="showFilters ? 'true' : 'false'"
+          aria-controls="recurring-invoice-filter-wrapper"
           @click="toggleFilter"
         >
           {{ $t('general.filter') }}
@@ -44,7 +46,15 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper v-show="showFilters" @clear="clearFilter">
+    <BaseFilterWrapper
+      id="recurring-invoice-filter-wrapper"
+      :show="showFilters"
+      class="mt-5"
+      cols="auto"
+      gap="md"
+      aria-label="Recurring invoice filters"
+      @clear="clearFilter"
+    >
       <BaseInputGroup :label="$tc('customers.customer', 1)">
         <BaseCustomerSelectInput
           v-model="filters.customer_id"
@@ -72,11 +82,6 @@
           calendar-button-icon="calendar"
         />
       </BaseInputGroup>
-
-      <div
-        class="hidden w-8 h-0 mx-4 border border-gray-400 border-solid xl:block"
-        style="margin-top: 1.5rem"
-      />
 
       <BaseInputGroup :label="$t('general.to')">
         <BaseDatePicker

@@ -11,6 +11,8 @@
           <BaseButton
             v-show="brandStore.totalBrands"
             variant="primary-outline"
+            :aria-expanded="showFilters ? 'true' : 'false'"
+            aria-controls="brand-filter-wrapper"
             @click="toggleFilter"
           >
             {{ $t('general.filter') }}
@@ -39,8 +41,16 @@
 
     <BrandModal />
 
-    <BaseFilterWrapper :show="showFilters" class="mt-5" @clear="clearFilter">
-      <BaseInputGroup :label="$t('brands.name')" class="text-left">
+    <BaseFilterWrapper
+      id="brand-filter-wrapper"
+      :show="showFilters"
+      class="mt-5"
+      cols="auto"
+      gap="md"
+      aria-label="Brand filters"
+      @clear="clearFilter"
+    >
+      <BaseInputGroup :label="$t('brands.name')" :span="2">
         <BaseInput
           v-model="filters.name"
           type="text"

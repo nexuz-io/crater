@@ -12,6 +12,8 @@
           <BaseButton
             v-show="usersStore.totalUsers"
             variant="primary-outline"
+            :aria-expanded="showFilters ? 'true' : 'false'"
+            aria-controls="user-filter-wrapper"
             @click="toggleFilter"
           >
             {{ $t('general.filter') }}
@@ -42,8 +44,16 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper :show="showFilters" class="mt-3" @clear="clearFilter">
-      <BaseInputGroup :label="$tc('users.name')" class="flex-1 mt-2 mr-4">
+    <BaseFilterWrapper
+      id="user-filter-wrapper"
+      :show="showFilters"
+      class="mt-3"
+      cols="auto"
+      gap="md"
+      aria-label="User filters"
+      @clear="clearFilter"
+    >
+      <BaseInputGroup :label="$tc('users.name')">
         <BaseInput
           v-model="filters.name"
           type="text"
@@ -52,7 +62,7 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$tc('users.email')" class="flex-1 mt-2 mr-4">
+      <BaseInputGroup :label="$tc('users.email')">
         <BaseInput
           v-model="filters.email"
           type="text"
@@ -61,7 +71,7 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup class="flex-1 mt-2" :label="$tc('users.phone')">
+      <BaseInputGroup :label="$tc('users.phone')">
         <BaseInput
           v-model="filters.phone"
           type="text"

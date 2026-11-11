@@ -11,12 +11,14 @@
           <BaseButton
             v-show="familyStore.totalFamilies"
             variant="primary-outline"
-            @click="toggleSearch"
+            :aria-expanded="showFilters ? 'true' : 'false'"
+            aria-controls="item-family-filter-wrapper"
+            @click="toggleFilter"
           >
             {{ $t('general.filter') }}
             <template #right="slotProps">
               <BaseIcon
-                v-if="!showSearch"
+                v-if="!showFilters"
                 :class="slotProps.class"
                 name="FilterIcon"
               />
@@ -39,24 +41,25 @@
 
     <ItemFamilyModal />
 
-    <div
-      v-if="showSearch"
-      class="flex items-center gap-2 mt-4"
+    <BaseFilterWrapper
+      id="item-family-filter-wrapper"
+      :show="showFilters"
+      class="mt-4"
+      cols="auto"
+      gap="md"
+      aria-label="Item family filters"
+      @clear="clearFilter"
     >
-      <BaseInput
-        v-model="searchTerm"
-        type="search"
-        :placeholder="$t('item_families.search_placeholder')"
-        autocomplete="off"
-        @input="onSearchInput"
-      />
-      <BaseButton
-        variant="primary-outline"
-        @click="onSearchInput"
-      >
-        {{ $t('general.filter') }}
-      </BaseButton>
-    </div>
+      <BaseInputGroup :label="$t('general.search')" :span="2">
+        <BaseInput
+          v-model="searchTerm"
+          type="search"
+          :placeholder="$t('item_families.search_placeholder')"
+          autocomplete="off"
+          @input="onSearchInput"
+        />
+      </BaseInputGroup>
+    </BaseFilterWrapper>
 
     <div v-if="familyStore.isFetching" class="flex justify-center pt-6">
       <LoadingIcon class="h-6 w-6 text-primary-400" />
@@ -129,7 +132,7 @@ const dialogStore = useDialogStore()
 const notificationStore = useNotificationStore()
 const { t } = useI18n()
 
-const showSearch = ref(false)
+const showFilters = ref(false)
 const searchTerm = ref('')
 const activeId = ref(null)
 
@@ -357,12 +360,16 @@ function onRemove(node) {
     })
 }
 
-function toggleSearch() {
-  showSearch.value = !showSearch.value
-  if (!showSearch.value) {
-    searchTerm.value = ''
-    fullPathSet.value = new Set()
+function toggleFilter() {
+  showFilters.value = !showFilters.value
+  if (!showFilters.value) {
+    clearFilter()
   }
+}
+
+function clearFilter() {
+  searchTerm.value = ''
+  fullPathSet.value = new Set()
 }
 
 function onSearchInput() {

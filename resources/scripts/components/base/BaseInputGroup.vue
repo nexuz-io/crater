@@ -1,5 +1,5 @@
 <template>
-  <div :class="containerClasses" class="relative w-full text-left">
+  <div :class="containerClasses" class="relative w-full text-left" :data-span="spanStyle">
     <BaseContentPlaceholders v-if="contentLoading">
       <BaseContentPlaceholdersText :lines="1" :class="contentLoadClass" />
     </BaseContentPlaceholders>
@@ -79,6 +79,17 @@ const props = defineProps({
     default: null,
     required: false,
   },
+  // Visual width of the field when nested inside a BaseFilterWrapper
+  // grid. Values map to the column span: 1, 2, 3 or 'full'. When the
+  // group is used outside the wrapper, the attribute is purely
+  // informational and yields no layout change.
+  span: {
+    type: [Number, String],
+    default: 1,
+    validator: (value) =>
+      [1, 2, 3, 'full'].includes(Number(value)) ||
+      [1, 2, 3, 'full'].includes(String(value)),
+  },
 })
 
 const containerClasses = computed(() => {
@@ -109,5 +120,19 @@ const slots = useSlots()
 
 const hasRightLabelSlot = computed(() => {
   return !!slots.labelRight
+})
+
+// Surface the span as a data attribute on the root so the
+// BaseFilterWrapper grid can pick it up via CSS (`[data-span="2"]`
+// -> `grid-column: span 2`). Validated above so only legitimate
+// values escape; `full` collapses to first/last line for full-width
+// rows. When a numeric 1 is passed (the default), the attribute
+// resolves to `null` and the CSS rule falls through to the implicit
+// span of 1 — no styling leak outside the wrapper.
+const spanStyle = computed(() => {
+  const v = props.span
+  if (v === 'full' || Number(v) === 0) return 'full'
+  if (Number(v) >= 2) return String(v)
+  return null
 })
 </script>

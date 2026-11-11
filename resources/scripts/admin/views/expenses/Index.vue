@@ -11,6 +11,8 @@
         <BaseButton
           v-show="expenseStore.totalExpenses"
           variant="primary-outline"
+          :aria-expanded="showFilters ? 'true' : 'false'"
+          aria-controls="expense-filter-wrapper"
           @click="toggleFilter"
         >
           {{ $t('general.filter') }}
@@ -38,7 +40,15 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper :show="showFilters" class="mt-5" @clear="clearFilter">
+    <BaseFilterWrapper
+      id="expense-filter-wrapper"
+      :show="showFilters"
+      class="mt-5"
+      cols="auto"
+      gap="md"
+      aria-label="Expense filters"
+      @clear="clearFilter"
+    >
       <BaseInputGroup :label="$t('expenses.customer')">
         <BaseCustomerSelectInput
           v-model="filters.customer_id"
@@ -70,10 +80,6 @@
           calendar-button-icon="calendar"
         />
       </BaseInputGroup>
-      <div
-        class="hidden w-8 h-0 mx-4 border border-gray-400 border-solid xl:block"
-        style="margin-top: 1.5rem"
-      />
 
       <BaseInputGroup :label="$t('expenses.to_date')">
         <BaseDatePicker

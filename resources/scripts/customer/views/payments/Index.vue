@@ -1,19 +1,21 @@
 <template>
   <BasePage>
     <BasePageHeader :title="$t('payments.title')">
-      <BaseBreadcrumb slot="breadcrumbs">
+      <template #breadcrumbs>
         <BaseBreadcrumbItem
           :title="$t('general.home')"
           :to="`/${globalStore.companySlug}/customer/dashboard`"
         />
 
         <BaseBreadcrumbItem :title="$tc('payments.payment', 2)" to="#" active />
-      </BaseBreadcrumb>
+      </template>
 
       <template #actions>
         <BaseButton
           v-show="paymentStore.totalPayments"
           variant="primary-outline"
+          :aria-expanded="showFilters ? 'true' : 'false'"
+          aria-controls="customer-payment-filter-wrapper"
           @click="toggleFilter"
         >
           {{ $t('general.filter') }}
@@ -29,15 +31,23 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper v-show="showFilters" @clear="clearFilter">
-      <BaseInputGroup :label="$t('payments.payment_number')" class="px-3">
+    <BaseFilterWrapper
+      id="customer-payment-filter-wrapper"
+      :show="showFilters"
+      class="mt-7"
+      cols="auto"
+      gap="md"
+      aria-label="Customer payment filters"
+      @clear="clearFilter"
+    >
+      <BaseInputGroup :label="$t('payments.payment_number')">
         <BaseInput
           v-model="filters.payment_number"
           :placeholder="$t('payments.payment_number')"
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('payments.payment_mode')" class="px-3">
+      <BaseInputGroup :label="$t('payments.payment_mode')">
         <BaseMultiselect
           v-model="filters.payment_mode"
           value-prop="id"
@@ -244,7 +254,6 @@ function setFilters() {
 }
 
 function clearFilter() {
-  filters.customer = ''
   filters.payment_mode = ''
   filters.payment_number = ''
 }

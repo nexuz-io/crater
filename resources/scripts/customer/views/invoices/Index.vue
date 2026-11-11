@@ -13,6 +13,8 @@
         <BaseButton
           v-show="invoiceStore.totalInvoices"
           variant="primary-outline"
+          :aria-expanded="showFilters ? 'true' : 'false'"
+          aria-controls="customer-invoice-filter-wrapper"
           @click="toggleFilter"
         >
           {{ $t('general.filter') }}
@@ -28,8 +30,16 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper v-show="showFilters" @clear="clearFilter">
-      <BaseInputGroup :label="$t('invoices.status')" class="px-3">
+    <BaseFilterWrapper
+      id="customer-invoice-filter-wrapper"
+      :show="showFilters"
+      class="mt-7"
+      cols="auto"
+      gap="md"
+      aria-label="Customer invoice filters"
+      @clear="clearFilter"
+    >
+      <BaseInputGroup :label="$t('invoices.status')">
         <BaseSelectInput
           v-model="filters.status"
           :options="status"
@@ -42,15 +52,13 @@
       <BaseInputGroup
         :label="$t('invoices.invoice_number')"
         color="black-light"
-        class="px-3 mt-2"
       >
         <BaseInput v-model="filters.invoice_number">
-          <BaseIcon name="DotsHorizontalIcon" class="h-5 text-gray-500" />
           <BaseIcon name="HashtagIcon" class="h-5 ml-3 text-gray-600" />
         </BaseInput>
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('general.from')" class="px-3">
+      <BaseInputGroup :label="$t('general.from')">
         <BaseDatePicker
           v-model="filters.from_date"
           :calendar-button="true"
@@ -58,12 +66,7 @@
         />
       </BaseInputGroup>
 
-      <div
-        class="hidden w-8 h-0 mx-4 border border-gray-400 border-solid xl:block"
-        style="margin-top: 1.5rem"
-      />
-
-      <BaseInputGroup :label="$t('general.to')" class="px-3">
+      <BaseInputGroup :label="$t('general.to')">
         <BaseDatePicker
           v-model="filters.to_date"
           :calendar-button="true"
