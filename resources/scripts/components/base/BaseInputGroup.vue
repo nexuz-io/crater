@@ -1,24 +1,29 @@
 <template>
-  <div :class="containerClasses" class="relative w-full text-left" :data-span="spanStyle">
+  <div
+    :class="containerClasses"
+    class="relative w-full text-left"
+    :data-span="spanStyle"
+    :data-active="resolvedDataActive"
+  >
     <BaseContentPlaceholders v-if="contentLoading">
       <BaseContentPlaceholdersText :lines="1" :class="contentLoadClass" />
     </BaseContentPlaceholders>
     <label
       v-else-if="label"
-      :class="labelClasses"
-      class="
-        flex
-        text-sm
-        not-italic
-        items-center
-        font-medium
-        text-gray-800
-        whitespace-nowrap
-        justify-between
-      "
+      :class="[
+        labelClasses,
+        'flex text-sm not-italic items-center font-medium whitespace-nowrap justify-between',
+        active ? 'text-primary-700' : 'text-gray-800',
+      ]"
     >
-      <div>
-        {{ label }}
+      <div class="flex items-center gap-1.5 min-w-0">
+        <span
+          v-if="active"
+          aria-hidden="true"
+          data-testid="filter-active-dot"
+          class="inline-flex h-1.5 w-1.5 rounded-full bg-primary-500 shrink-0"
+        />
+        <span class="truncate">{{ label }}</span>
         <span v-show="required" class="text-sm text-red-500"> * </span>
       </div>
       <slot v-if="hasRightLabelSlot" name="labelRight" />
@@ -29,7 +34,12 @@
         class="h-4 text-gray-400 cursor-pointer hover:text-gray-600"
       />
     </label>
-    <div :class="inputContainerClasses">
+    <div
+      :class="[
+        inputContainerClasses,
+        active && 'rounded-md ring-1 ring-primary-200 bg-primary-50/30',
+      ]"
+    >
       <slot></slot>
       <span v-if="helpText" class="text-gray-500 text-xs mt-1 font-light">
         {{ helpText }}
@@ -43,6 +53,16 @@
 
 <script setup>
 import { computed, useSlots } from 'vue'
+
+// Optional active indicator:
+//   :active="true"   → label turns primary-700, small dot renders
+//                      before the label text, surrounding input
+//                      container receives a subtle primary-200 ring.
+//   :active="false"  (default) → neutral grays.
+//
+// The dot is aria-hidden=true because the active state is announced
+// elsewhere by `BaseActiveFilters'` chip. Adding another SR cue in
+// the panel itself would add noise without informational value.
 
 const props = defineProps({
   contentLoading: {
@@ -90,6 +110,12 @@ const props = defineProps({
       [1, 2, 3, 'full'].includes(Number(value)) ||
       [1, 2, 3, 'full'].includes(String(value)),
   },
+  // Visual indicator that this group's bound value is non-empty.
+  // Drives the small dot + tinted label + ring on the input slot.
+  active: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const containerClasses = computed(() => {
@@ -135,4 +161,7 @@ const spanStyle = computed(() => {
   if (Number(v) >= 2) return String(v)
   return null
 })
+
+const resolvedDataActive = computed(() => (props.active ? 'true' : null))
 </script>
+

@@ -9,24 +9,6 @@
       <template #actions>
         <div class="flex items-center justify-end space-x-5">
           <BaseButton
-            v-show="brandStore.totalBrands"
-            variant="primary-outline"
-            :aria-expanded="showFilters ? 'true' : 'false'"
-            aria-controls="brand-filter-wrapper"
-            @click="toggleFilter"
-          >
-            {{ $t('general.filter') }}
-            <template #right="slotProps">
-              <BaseIcon
-                v-if="!showFilters"
-                :class="slotProps.class"
-                name="FilterIcon"
-              />
-              <BaseIcon v-else name="XIcon" :class="slotProps.class" />
-            </template>
-          </BaseButton>
-
-          <BaseButton
             v-if="userStore.hasAbilities(abilities.CREATE_BRAND)"
             @click="addNewBrand"
           >
@@ -41,24 +23,96 @@
 
     <BrandModal />
 
-    <BaseFilterWrapper
-      id="brand-filter-wrapper"
-      :show="showFilters"
-      class="mt-5"
-      cols="auto"
-      gap="md"
-      aria-label="Brand filters"
+    <!-- Phase 9 · Pilot reuse of BaseFilterToolbar on a 1-filter
+         listing. Even when the toolbar hides nothing, moving the
+         search up here proves the contract: same `filter-primary`
+         slot for the always-visible input, same `filter-panel`
+         slot for the advanced surface, same chip plumbing. -->
+    <BaseFilterToolbar
+      id="brands-filter-toolbar"
+      class="mt-4"
+      :chips="activeFilterChips"
+      :count-label="activeFilterChips.length || null"
+      :clear-all-label="$t('general.clear_all')"
+      aria-label="Brand filters toolbar"
+      @remove="removeFilterByKey"
       @clear="clearFilter"
     >
-      <BaseInputGroup :label="$t('brands.name')" :span="2">
-        <BaseInput
-          v-model="filters.name"
-          type="text"
-          name="name"
-          autocomplete="off"
-        />
-      </BaseInputGroup>
-    </BaseFilterWrapper>
+      <template #filter-primary>
+        <div
+          class="
+            flex flex-col sm:flex-row
+            w-full
+            items-stretch
+            gap-2 sm:gap-3
+            p-2.5
+            bg-surface-secondary
+            border border-line-light
+            rounded-xl
+            shadow-soft
+          "
+        >
+          <BaseFilterSearchBar
+            id="brands-search"
+            v-model="filters.name"
+            name="brand-search"
+            :placeholder="$t('brands.search_placeholder')"
+            :clear-label="$t('general.clear')"
+            class="min-w-0 flex-1"
+            @submit="setFilters"
+          />
+
+          <BaseButton
+            v-show="brandStore.totalBrands"
+            variant="primary-outline"
+            class="
+              h-11 shrink-0
+              px-3 sm:px-4
+              w-full sm:w-auto
+              justify-between sm:justify-start
+              lg:ml-auto
+            "
+            :aria-expanded="showFilters ? 'true' : 'false'"
+            aria-controls="brands-filter-toolbar"
+            @click="toggleFilter"
+          >
+            {{ $t('general.filter') }}
+            <template #right="slotProps">
+              <BaseIcon
+                v-if="!showFilters"
+                :class="slotProps.class"
+                name="FilterIcon"
+              />
+              <BaseIcon v-else name="XIcon" :class="slotProps.class" />
+            </template>
+          </BaseButton>
+        </div>
+      </template>
+
+      <template #filter-panel>
+        <BaseFilterWrapper
+          v-show="showFilters"
+          cols="auto"
+          gap="md"
+          aria-label="Brand filters"
+          :has-active-filters="activeFilterChips.length > 0"
+          @clear="clearFilter"
+        >
+          <BaseInputGroup
+            :label="$t('brands.name')"
+            :span="2"
+            :active="!!filters.name?.trim()"
+          >
+            <BaseInput
+              v-model="filters.name"
+              type="text"
+              name="name"
+              autocomplete="off"
+            />
+          </BaseInputGroup>
+        </BaseFilterWrapper>
+      </template>
+    </BaseFilterToolbar>
 
     <BaseEmptyPlaceholder
       v-show="showEmptyScreen"
@@ -178,11 +232,34 @@ function clearFilter() {
   filters.name = ''
 }
 
-function toggleFilter() {
-  if (showFilters.value) {
-    clearFilter()
+// Phase 9 · Chips de filtros activos compartidos con el toolbar
+// patrón. Para brands sólo hay un filtro (name) así que el resumen
+// es trivial, pero el contrato ya está en uso: si en el futuro se
+// añaden filtros adicionales, basta con extender este computed.
+const activeFilterChips = computed(() => {
+  const chips = []
+  if (filters.name?.trim()) {
+    chips.push({ key: 'name', label: `"${filters.name}"` })
   }
+  return chips
+})
+
+function removeFilterByKey(key) {
+  if (key === 'name') {
+    filters.name = ''
+  }
+}
+
+function toggleFilter() {
+  // El botón toggleFilter abre/cierra el panel pero NO limpia
+  // filtros. La acción `Limpiar todo` queda en manos del usuario
+  // (botón explícito o chip de resumen), evitando el footgun
+  // histórico de "al cerrar el panel se vacían los filtros".
   showFilters.value = !showFilters.value
+}
+
+function setFilters() {
+  refreshTable()
 }
 
 function refreshTable() {

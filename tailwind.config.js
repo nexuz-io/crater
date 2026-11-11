@@ -25,13 +25,16 @@ module.exports = {
     // scanner cannot resolve those at build time, so we explictly
     // safelist the full grid-cols surface used by the wrapper so the
     // styles are always emitted. Counts 1..12 cover everything the
-    // wrapper may request; the responsive variants cover md/lg/xl
-    // breakpoints.
+    // wrapper may request; the responsive variants cover sm (used
+    // by the 1→2 step at 640px) through 2xl (used by the three-number
+    // form xl/lg/2xl).
     ...Array.from({ length: 12 }, (_, i) => i + 1).flatMap((n) => [
       `grid-cols-${n}`,
+      `sm:grid-cols-${n}`,
       `md:grid-cols-${n}`,
       `lg:grid-cols-${n}`,
       `xl:grid-cols-${n}`,
+      `2xl:grid-cols-${n}`,
     ]),
   ],
   theme: {

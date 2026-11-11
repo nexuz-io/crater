@@ -9,22 +9,6 @@
       <template #actions>
         <div class="flex items-center justify-end space-x-5">
           <BaseButton
-            v-show="itemStore.totalItems"
-            variant="primary-outline"
-            @click="toggleFilter"
-          >
-            {{ $t('general.filter') }}
-            <template #right="slotProps">
-              <BaseIcon
-                v-if="!showFilters"
-                :class="slotProps.class"
-                name="FilterIcon"
-              />
-              <BaseIcon v-else name="XIcon" :class="slotProps.class" />
-            </template>
-          </BaseButton>
-
-          <BaseButton
             v-if="userStore.hasAbilities(abilities.VIEW_BRAND)"
             variant="primary-outline"
             @click="$router.push('/admin/brands')"
@@ -59,28 +43,110 @@
       </template>
     </BasePageHeader>
 
-    <BaseFilterWrapper
-      :show="showFilters"
-      class="mt-5"
-      cols="auto-8-6"
-      gap="md"
+    <!-- Phase 1+3 · Toolbar persistente. La búsqueda principal queda
+         siempre visible y el botón "Filtrar" controla la visibilidad
+         del panel avanzado (slot filter-panel). El slot filter-actions
+         se reserva para futuros consumidores que necesiten acciones
+         complementarias en la barra. -->
+    <BaseFilterToolbar
+      id="items-filter-toolbar"
+      class="mt-4"
+      :chips="activeFilterChips"
+      :count-label="activeFilterChips.length || null"
+      :clear-all-label="$t('general.clear_all')"
+      aria-label="Item filters toolbar"
+      @remove="removeFilterByKey"
       @clear="clearFilter"
     >
-      <!-- 1 · Búsqueda global: backend ahora busca en name + description
-           (tokenizado por espacios). El campo se ensancha a span=3
-           para acomodar el placeholder extendido sin truncar el
-           texto y dejar mejor proporción visual junto a los
-           selectores adyacentes. -->
-      <BaseInputGroup :label="$t('items.search')" :span="3">
-        <BaseInput
-          v-model="filters.name"
-          type="text"
-          name="name"
-          autocomplete="off"
-        />
-      </BaseInputGroup>
+      <template #filter-primary>
+        <!-- Container común: search + botón viven en una sola unidad
+             visual (rounded-xl + bg-surface-secondary + border + shadow).
+             En < sm se apilan para no comprimir ninguno de los dos;
+             desde sm+ se ponen lado a lado, con el botón explícitamente
+             empujado a la derecha via lg:ml-auto. El padding interno
+             (p-1.5) y el border permiten que cada control conserve su
+             propio background y se distingan como elementos dentro
+             del card contenedor. -->
+        <div
+          class="
+            flex flex-col sm:flex-row
+            w-full
+            items-stretch
+            gap-2 sm:gap-3
+            p-2.5
+            bg-surface-secondary
+            border border-line-light
+            rounded-xl
+            shadow-soft
+          "
+        >
+          <BaseFilterSearchBar
+            id="items-search"
+            v-model="filters.name"
+            name="items-search"
+            :placeholder="$t('items.search_placeholder')"
+            :clear-label="$t('general.clear')"
+            class="min-w-0 flex-1"
+            @submit="setFilters"
+          />
 
-      <BaseInputGroup :label="$tc('items.unit')">
+          <BaseButton
+            v-show="itemStore.totalItems"
+            variant="primary-outline"
+            class="
+              h-11 shrink-0
+              px-3 sm:px-4
+              w-full sm:w-auto
+              justify-between sm:justify-start
+              lg:ml-auto
+            "
+            :aria-expanded="showFilters ? 'true' : 'false'"
+            aria-controls="items-filter-toolbar"
+            @click="toggleFilter"
+          >
+            {{ $t('general.filter') }}
+            <template #right="slotProps">
+              <BaseIcon
+                v-if="!showFilters"
+                :class="slotProps.class"
+                name="FilterIcon"
+              />
+              <BaseIcon v-else name="XIcon" :class="slotProps.class" />
+            </template>
+          </BaseButton>
+        </div>
+      </template>
+
+      <template #filter-panel>
+        <!-- Desktop distribution (md+):
+             Row 1: unit · status (1/3 c/u — search vive en el toolbar)
+             Row 2: brand · family · price (1/3 c/u)
+             Row 3: no-brand · no-family (1/2 c/u — toggles)
+             Row 4 (conditional): descendants (span=full)
+
+             The previous 4+4+1 layout left 2 empty cells on every
+             row; this one fills the 6-col template cleanly in both
+             the default (8 controls) and "family picked" (9
+             controls) states. We pin every desktop breakpoint
+             (lg/xl/2xl) to the 6-col template so the 2xl wide
+             monitor does not push the layout into an awkward
+             4+3+1 auto-place pattern. -->
+        <BaseFilterWrapper
+          v-show="showFilters"
+          class="hidden md:block"
+          cols="auto-6-6-6"
+          gap="md"
+          aria-label="Item filters"
+          :has-active-filters="activeFilterChips.length > 0"
+          @clear="clearFilter"
+        >
+      <!-- Row 1 · Unidad + estado (1/3 c/u; el campo de búsqueda vive
+           en el toolbar persistente). -->
+      <BaseInputGroup
+        :label="$tc('items.unit')"
+        :span="2"
+        :active="isFilterActive('unit_id')"
+      >
         <BaseMultiselect
           v-model="filters.unit_id"
           :placeholder="$t('items.select_a_unit')"
@@ -96,7 +162,11 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('items.service_status')">
+      <BaseInputGroup
+        :label="$t('items.service_status')"
+        :span="2"
+        :active="isFilterActive('active')"
+      >
         <BaseMultiselect
           v-model="filters.active"
           value-prop="value"
@@ -109,8 +179,12 @@
         />
       </BaseInputGroup>
 
-      <!-- 2 · Marca + Familia + Precio -->
-      <BaseInputGroup :label="$t('items.brand')">
+      <!-- Row 2 · Marca + Familia + Precio (1/3 c/u). -->
+      <BaseInputGroup
+        :label="$t('items.brand')"
+        :span="2"
+        :active="isFilterActive('brand_id')"
+      >
         <BaseMultiselect
           v-model="filters.brand_id"
           :placeholder="$t('items.select_a_brand')"
@@ -129,7 +203,11 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('items.family')">
+      <BaseInputGroup
+        :label="$t('items.family')"
+        :span="2"
+        :active="isFilterActive('family_id')"
+      >
         <BaseMultiselect
           v-model="filters.family_id"
           :placeholder="$t('items.select_a_family')"
@@ -148,35 +226,174 @@
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('items.unit_price')">
+      <BaseInputGroup
+        :label="$t('items.unit_price')"
+        :span="2"
+        :active="isFilterActive('price')"
+      >
         <BaseMoney v-model="filters.price" />
       </BaseInputGroup>
 
-      <!-- 3 · Toggles mutuamente excluyentes + Descendientes -->
-      <BaseInputGroup :label="$t('brands.filter_without_brand')">
+      <!-- Row 3 · Toggles mutuamente excluyentes (1/2 c/u). -->
+      <BaseInputGroup
+        :label="$t('brands.filter_without_brand')"
+        :span="3"
+        :active="isFilterActive('without_brand')"
+      >
         <BaseSwitch
           :model-value="filters.without_brand"
           @update:model-value="toggleWithoutBrand"
         />
       </BaseInputGroup>
 
-      <BaseInputGroup :label="$t('item_families.without_family')">
+      <BaseInputGroup
+        :label="$t('item_families.without_family')"
+        :span="3"
+        :active="isFilterActive('without_family')"
+      >
         <BaseSwitch
           :model-value="filters.without_family"
           @update:model-value="toggleWithoutFamily"
         />
       </BaseInputGroup>
-
-      <BaseInputGroup
-        v-show="filters.family_id"
-        :label="$t('item_families.include_descendants')"
-      >
-        <BaseSwitch
-          :model-value="filters.include_descendants"
-          @update:model-value="toggleIncludeDescendants"
-        />
-      </BaseInputGroup>
     </BaseFilterWrapper>
+
+    <!-- Mobile / tablet layout: stacked row-based sheet with explicit
+         Limpiar / Aplicar acciones y un header mínimo (solo título +
+         colapsar, sin icono, según decisión de UI móvil). Visible
+         below `md` only; the desktop wrapper above owns md+. La
+         búsqueda global vive en el toolbar, no en este panel. -->
+    <BaseFilterSheet
+      v-show="showFilters"
+      class="md:hidden"
+      :show="showFilters"
+      aria-label="Item filters"
+      :clear-label="$t('general.clear_all')"
+      :apply-label="$t('general.apply')"
+      @update:show="showFilters = $event"
+      @clear="clearFilter"
+      @apply="onApply"
+    >
+      <!-- Row 1: unit + status, semantically related dropdowns
+           (catalogue + lifecycle). 2-col on sm+, 1-col on tiny phones. -->
+      <BaseFilterRow variant="pair" align="start">
+        <BaseInputGroup
+          :label="$tc('items.unit')"
+          :active="isFilterActive('unit_id')"
+        >
+          <BaseMultiselect
+            v-model="filters.unit_id"
+            :placeholder="$t('items.select_a_unit')"
+            value-prop="id"
+            track-by="name"
+            :filter-results="false"
+            label="name"
+            resolve-on-load
+            :delay="500"
+            searchable
+            class="w-full"
+            :options="searchUnits"
+          />
+        </BaseInputGroup>
+        <BaseInputGroup
+          :label="$t('items.service_status')"
+          :active="isFilterActive('active')"
+        >
+          <BaseMultiselect
+            v-model="filters.active"
+            value-prop="value"
+            track-by="label"
+            label="label"
+            :filter-results="false"
+            :options="statusOptions"
+            :placeholder="$t('items.all_statuses')"
+            class="w-full"
+          />
+        </BaseInputGroup>
+      </BaseFilterRow>
+
+      <!-- Row 2: brand + family, semantically related classification
+           filters. Same 2-col responsive curve as row 1. -->
+      <BaseFilterRow variant="pair" align="start">
+        <BaseInputGroup
+          :label="$t('items.brand')"
+          :active="isFilterActive('brand_id')"
+        >
+          <BaseMultiselect
+            v-model="filters.brand_id"
+            :placeholder="$t('items.select_a_brand')"
+            value-prop="id"
+            track-by="name"
+            :filter-results="false"
+            :allow-empty="true"
+            :clearable="true"
+            label="name"
+            resolve-on-load
+            :delay="500"
+            searchable
+            class="w-full"
+            :options="searchBrands"
+            @update:model-value="onBrandFilterChange"
+          />
+        </BaseInputGroup>
+        <BaseInputGroup
+          :label="$t('items.family')"
+          :active="isFilterActive('family_id')"
+        >
+          <BaseMultiselect
+            v-model="filters.family_id"
+            :placeholder="$t('items.select_a_family')"
+            value-prop="id"
+            track-by="name"
+            :filter-results="false"
+            :allow-empty="true"
+            :clearable="true"
+            label="name"
+            resolve-on-load
+            :delay="500"
+            searchable
+            class="w-full"
+            :options="searchFamilies"
+            @update:model-value="onFamilyFilterChange"
+          />
+        </BaseInputGroup>
+      </BaseFilterRow>
+
+      <!-- Row 3: full-width price. -->
+      <BaseFilterRow variant="full">
+        <BaseInputGroup
+          :label="$t('items.unit_price')"
+          :active="isFilterActive('price')"
+        >
+          <BaseMoney v-model="filters.price" />
+        </BaseInputGroup>
+      </BaseFilterRow>
+
+      <!-- Row 4: without-brand + without-family toggles. Pair layout
+           so switches line up beside each other on phablet+ layouts. -->
+      <BaseFilterRow variant="pair" align="center">
+        <BaseInputGroup
+          :label="$t('brands.filter_without_brand')"
+          :active="isFilterActive('without_brand')"
+        >
+          <BaseSwitch
+            :model-value="filters.without_brand"
+            @update:model-value="toggleWithoutBrand"
+          />
+        </BaseInputGroup>
+        <BaseInputGroup
+          :label="$t('item_families.without_family')"
+          :active="isFilterActive('without_family')"
+        >
+          <BaseSwitch
+            :model-value="filters.without_family"
+            @update:model-value="toggleWithoutFamily"
+          />
+        </BaseInputGroup>
+      </BaseFilterRow>
+    </BaseFilterSheet>
+      </template>
+    </BaseFilterToolbar>
 
     <BaseEmptyPlaceholder
       v-show="showEmptyScreen"
@@ -453,16 +670,198 @@ function clearFilter() {
   filters.include_descendants = true
 }
 
+// Phase 2 · Resumen de filtros activos. Cada chip representa un
+// filtro con valor significativo (no vacío, no false). El listado
+// decide qué mostrar y con qué etiqueta; el componente
+// `BaseFilterChip` se encarga del rendering removible.
+//
+// `unit_id` y los selectores vienen como objeto { id, name }; leemos
+// `name` para mostrarlo legible. `price` es string (lo emite
+// `BaseMoney`); sólo lo incluimos si tiene valor. Los toggles
+// booleanos aparecen cuando están activos.
+const activeFilterChips = computed(() => {
+  const chips = []
+
+  if (filters.name?.trim()) {
+    chips.push({ key: 'name', label: `"${filters.name}"` })
+  }
+
+  // `value-prop="id"` makes `v-model` store a scalar (the option id)
+  // instead of the full option object. We look up the label via the
+  // dedicated caches so the chip shows the user-facing name and not a
+  // numeric id while the selection is alive in the dropdown. If the
+  // catalog is still loading, fall back to the raw id so the chip is
+  // informative rather than missing.
+  if (filters.unit_id) {
+    const u = unitCache.value[filters.unit_id]
+    chips.push({ key: 'unit_id', label: u?.name ?? `#${filters.unit_id}` })
+  }
+
+  if (filters.active !== '' && filters.active !== null &&
+      filters.active !== undefined) {
+    const isActive = filters.active.value === 1 ||
+                     filters.active === 1 ||
+                     filters.active === true
+    chips.push({
+      key: 'active',
+      label: isActive ? t('items.active') : t('items.inactive'),
+    })
+  }
+
+  if (filters.brand_id) {
+    const b = brandCache.value[filters.brand_id]
+    chips.push({ key: 'brand_id', label: b?.name ?? `#${filters.brand_id}` })
+  }
+
+  if (filters.family_id) {
+    // Family chips benefit from the breadcrumb path so deeply
+    // nested selections stay disambiguated (otherwise two families
+    // named "Servicios" at different depths would appear identical).
+    const f = familyCache.value[filters.family_id]
+    const segments = []
+    if (f) {
+      let cursor = f
+      const maxDepth = 64
+      let depth = 0
+      while (cursor && depth < maxDepth) {
+        segments.unshift(cursor.name)
+        if (!cursor.parent_id) break
+        cursor = familyCache.value[cursor.parent_id]
+        depth++
+      }
+    }
+    chips.push({
+      key: 'family_id',
+      label: segments.length ? segments.join(' / ') : `#${filters.family_id}`,
+    })
+  }
+
+  if (filters.price !== '' && filters.price !== null &&
+      filters.price !== undefined) {
+    chips.push({ key: 'price', label: formatPriceChip(filters.price) })
+  }
+
+  if (filters.without_brand) {
+    chips.push({
+      key: 'without_brand',
+      label: t('brands.filter_without_brand'),
+    })
+  }
+
+  if (filters.without_family) {
+    chips.push({
+      key: 'without_family',
+      label: t('item_families.without_family'),
+    })
+  }
+
+  return chips
+})
+
+function formatPriceChip(value) {
+  const numeric = Number(value)
+  if (Number.isNaN(numeric)) return `${value}`
+  const currency = companyStore.selectedCompanyCurrency
+  // Lightweight formatter — full money rendering happens in the
+  // table cell; for chip readability, raw currency code + number
+  // is enough. MoneyFormatter from currency.js is exposed via the
+  // inject('utils') helper.
+  try {
+    return utils?.formatMoney?.(numeric, currency) ?? `$${numeric}`
+  } catch {
+    return `$${numeric}`
+  }
+}
+
+// Phase 7 · Active indicator hook. Each BaseInputGroup reads
+// `:active="isFilterActive('unit_id')"` (or whatever key) and
+// shows a tinted label + small dot + ring on the input slot when
+// the corresponding filter holds a meaningful value. Centralising
+// the predicate in this helper keeps the markup terse and ensures
+// the dot / ring state agrees with the chips in `activeFilterChips`.
+function isFilterActive(key) {
+  switch (key) {
+    case 'name':
+      return !!filters.name?.trim()
+    case 'unit_id':
+      return !!filters.unit_id
+    case 'active':
+      return (
+        filters.active !== '' &&
+        filters.active !== null &&
+        filters.active !== undefined
+      )
+    case 'brand_id':
+      return !!filters.brand_id
+    case 'family_id':
+      return !!filters.family_id
+    case 'price':
+      return (
+        filters.price !== '' &&
+        filters.price !== null &&
+        filters.price !== undefined
+      )
+    case 'without_brand':
+      return !!filters.without_brand
+    case 'without_family':
+      return !!filters.without_family
+    default:
+      return false
+  }
+}
+
+function removeFilterByKey(key) {
+  switch (key) {
+    case 'name':
+      filters.name = ''
+      break
+    case 'unit_id':
+      filters.unit_id = ''
+      break
+    case 'active':
+      filters.active = ''
+      break
+    case 'brand_id':
+      filters.brand_id = ''
+      break
+    case 'family_id':
+      filters.family_id = ''
+      break
+    case 'price':
+      filters.price = ''
+      break
+    case 'without_brand':
+      filters.without_brand = false
+      break
+    case 'without_family':
+      filters.without_family = false
+      break
+    default:
+      break
+  }
+}
+
 function hasAbilities() {
   return userStore.hasAbilities([abilities.DELETE_ITEM, abilities.EDIT_ITEM])
 }
 
 function toggleFilter() {
-  if (showFilters.value) {
-    clearFilter()
-  }
-
+  // Show / hide only. Resetting filters is now an explicit action
+  // owned by the `Limpiar` button in the mobile sheet footer (and
+  // the legacy `Limpiar todo` button in the desktop wrapper). This
+  // avoids the previous "clicking the toggle button while open
+  // discards the user's filter state" footgun.
   showFilters.value = !showFilters.value
+}
+
+function onApply() {
+  // With auto-apply (debouncedWatch) the table is already in sync
+  // with the current `filters` state by the time the user presses
+  // `Aplicar filtros`. The button's only job here is to dismiss the
+  // mobile sheet so the user lands back on the table view. If we
+  // later migrate to manual-apply, the relevant logic would slot in
+  // here (commit a `draftFilters` snapshot to `filters` and refresh).
+  refreshTable()
 }
 
 function refreshTable() {
@@ -502,8 +901,9 @@ function toggleWithoutBrand(value) {
 }
 
 // Family filter mirrors the brand filter contract: without_family
-// and family_id are mutually exclusive; include_descendants only
-// applies when a specific family is selected.
+// and family_id are mutually exclusive. include_descendants is not
+// user-controlled — selecting a family always includes its
+// descendants, so we don't expose a toggle for it.
 function onFamilyFilterChange(value) {
   if (value) {
     filters.without_family = false
@@ -515,10 +915,6 @@ function toggleWithoutFamily(value) {
   if (value) {
     filters.family_id = ''
   }
-}
-
-function toggleIncludeDescendants(value) {
-  filters.include_descendants = !!value
 }
 
 // Search the family catalog for the multiselect dropdown. The
@@ -586,6 +982,22 @@ const familyCache = computed(() => {
   return map
 })
 
+const unitCache = computed(() => {
+  const map = {}
+  for (const unit of itemStore.itemUnits ?? []) {
+    map[unit.id] = unit
+  }
+  return map
+})
+
+const brandCache = computed(() => {
+  const map = {}
+  for (const brand of itemStore.itemBrands ?? []) {
+    map[brand.id] = brand
+  }
+  return map
+})
+
 async function fetchData({ page, filter, sort }) {
   // Guard against the empty-string case: `Math.round('' * 100) === 0`,
   // so a cleared price would otherwise be sent as `0` and the backend
@@ -605,9 +1017,15 @@ async function fetchData({ page, filter, sort }) {
     without_brand: filters.without_brand ? '1' : '',
     family_id: filters.family_id !== null && filters.family_id !== '' ? filters.family_id : '',
     without_family: filters.without_family ? '1' : '',
-    include_descendants: filters.family_id && filters.without_brand === false && filters.without_family === false
-      ? (filters.include_descendants ? '1' : '0')
-      : '',
+    // include_descendants no longer user-controlled: a family_id
+    // selection always implies including its sub-tree, so we send
+    // '1' whenever the family is set and neither of the exclusion
+    // toggles is on. The backend treats anything else as "match the
+    // exact node and stop".
+    include_descendants:
+      filters.family_id && !filters.without_brand && !filters.without_family
+        ? '1'
+        : '',
     orderByField: sort.fieldName || 'created_at',
     orderBy: sort.order || 'desc',
     page,
