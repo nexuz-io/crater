@@ -212,6 +212,7 @@
     "edit_item": "상품 편집",
     "no_items": "아직 상품이 없습니다",
     "list_of_items": "이 섹션에는 상품 목록이 표시됩니다.",
+    "search_placeholder": "이름 또는 설명으로 검색",
     "select_a_unit": "단위 선택",
     "taxes": "구실",
     "item_attached_message": "이미 사용 중인 상품은 삭제할 수 없습니다",

@@ -256,6 +256,7 @@
     "edit_item": "Chỉnh sửa mặt hàng",
     "no_items": "Chưa có mặt hàng nào!",
     "list_of_items": "Phần này sẽ chứa danh sách mặt hàng.",
+    "search_placeholder": "Tìm theo tên hoặc mô tả",
     "select_a_unit": "chọn đơn vị",
     "taxes": "Thuế",
     "item_attached_message": "Không thể xóa mặt hàng đã được sử dụng",

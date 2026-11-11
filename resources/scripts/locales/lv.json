@@ -256,6 +256,7 @@
     "edit_item": "Rediģēt preci",
     "no_items": "Nav preču!",
     "list_of_items": "Šajā sadaļā būs preču saraksts.",
+    "search_placeholder": "Meklēt pēc nosaukuma vai apraksta",
     "select_a_unit": "atlasiet vienību",
     "taxes": "Nodokļi",
     "item_attached_message": "Nevar dzēst preci, kura tiek izmantota",

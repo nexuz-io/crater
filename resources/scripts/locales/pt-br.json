@@ -192,6 +192,7 @@
     "edit_item": "Editar produto",
     "no_items": "Ainda não existem produtos!",
     "list_of_items": "Esta seção conterá a lista de produtos.",
+    "search_placeholder": "Buscar por nome ou descrição",
     "select_a_unit": "Seleciona unidade",
     "taxes": "Impostos",
     "item_attached_message": "Não é possível excluir um produto que já está em uso.",

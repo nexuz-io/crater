@@ -256,6 +256,7 @@
     "edit_item": "Editar artigo",
     "no_items": "Ainda não existem artigos!",
     "list_of_items": "Esta seção conterá a lista de artigos.",
+    "search_placeholder": "Procurar por nome ou descrição",
     "select_a_unit": "selecionar unidade",
     "taxes": "Impostos",
     "item_attached_message": "Não é possível excluir um artigo que já está em uso",

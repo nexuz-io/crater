@@ -256,6 +256,7 @@
     "edit_item": "Artikel bewerken",
     "no_items": "Nog geen artikelen!",
     "list_of_items": "Hier vind je jouw artikelen terug.",
+    "search_placeholder": "Zoeken op naam of omschrijving",
     "select_a_unit": "selecteer eenheid",
     "taxes": "Belastingen",
     "item_attached_message": "Kan een artikel dat al in gebruik is niet verwijderen",

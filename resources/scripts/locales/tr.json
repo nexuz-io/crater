@@ -256,6 +256,7 @@
     "edit_item": "Ürünü düzenle",
     "no_items": "Henüz ürün yok!",
     "list_of_items": "Bu bölüm ürünlerin listesini içerir.",
+    "search_placeholder": "Ada veya açıklamaya göre ara",
     "select_a_unit": "birim seçin",
     "taxes": "Vergiler",
     "item_attached_message": "Kullanımda bulunan ürün silinemez",

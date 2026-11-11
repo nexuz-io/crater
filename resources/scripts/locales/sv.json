@@ -256,6 +256,7 @@
     "edit_item": "Ändra artikel",
     "no_items": "Inga artiklar än!",
     "list_of_items": "Här kommer listan över artiklar att visas.",
+    "search_placeholder": "Sök efter namn eller beskrivning",
     "select_a_unit": "välj enhet",
     "taxes": "Moms",
     "item_attached_message": "Kan inte radera en artikel som används",

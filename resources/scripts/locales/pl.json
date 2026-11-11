@@ -256,6 +256,7 @@
     "edit_item": "Edytuj produkt",
     "no_items": "Brak produktów!",
     "list_of_items": "Ta sekcja będzie zawierać listę produktów.",
+    "search_placeholder": "Szukaj po nazwie lub opisie",
     "select_a_unit": "wybierz jednostkę",
     "taxes": "Podatki",
     "item_attached_message": "Nie można usunąć produktu, który jest już używany",

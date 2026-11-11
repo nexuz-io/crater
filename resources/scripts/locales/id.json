@@ -256,6 +256,7 @@
     "edit_item": "Sunting produk",
     "no_items": "Belum ada produk!",
     "list_of_items": "Bagian ini akan memuat daftar produk.",
+    "search_placeholder": "Cari berdasarkan nama atau deskripsi",
     "select_a_unit": "pilih unit",
     "taxes": "Pajak",
     "item_attached_message": "Produk yang sudah digunakan tidak dapat dihapus",

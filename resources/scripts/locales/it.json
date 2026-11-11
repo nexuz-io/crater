@@ -256,6 +256,7 @@
     "edit_item": "Modifica articolo",
     "no_items": "Ancora nessun articolo!",
     "list_of_items": "Qui ci sarà la lista degli articoli.",
+    "search_placeholder": "Cerca per nome o descrizione",
     "select_a_unit": "Seleziona",
     "taxes": "Imposte",
     "item_attached_message": "Non puoi eliminare un articolo già in uso",

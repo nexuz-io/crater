@@ -256,6 +256,7 @@
     "edit_item": "Upravit produkt",
     "no_items": "Zatím žádné produkty!",
     "list_of_items": "Tato sekce bude obsahovat seznam produktů.",
+    "search_placeholder": "Hledat podle názvu nebo popisu",
     "select_a_unit": "vyberte jednotku",
     "taxes": "Daně",
     "item_attached_message": "Nelze odstranit produkt, který se již používá",

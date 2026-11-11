@@ -256,6 +256,7 @@
     "edit_item": "Editați articolul",
     "no_items": "Niciun articol încă!",
     "list_of_items": "Această secțiune va conține lista de articole.",
+    "search_placeholder": "Căutare după nume sau descriere",
     "select_a_unit": "select unit",
     "taxes": "Taxes",
     "item_attached_message": "Nu se poate șterge un articol care este deja utilizat",

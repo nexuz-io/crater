@@ -256,6 +256,7 @@
     "edit_item": "Upraviť produkt",
     "no_items": "Zatiaľ žiadne produkty!",
     "list_of_items": "Táto sekcia bude obsahovať zoznam produktov.",
+    "search_placeholder": "Hľadať podľa názvu alebo popisu",
     "select_a_unit": "vyberte jednotku",
     "taxes": "Dane",
     "item_attached_message": "Nie je možné vymazať produkt, ktorý sa používa",

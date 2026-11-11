@@ -256,6 +256,7 @@
     "edit_item": "編輯商品",
     "no_items": "沒有設置商品!",
     "list_of_items": "這部份包含商品列表.",
+    "search_placeholder": "按名称或描述搜索",
     "select_a_unit": "選擇單位",
     "taxes": "税",
     "item_attached_message": "已使用的商品不允許刪除.",

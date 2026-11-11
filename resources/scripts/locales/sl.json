@@ -256,6 +256,7 @@
     "edit_item": "Uredi izdelek",
     "no_items": "Ni še izdelkov!",
     "list_of_items": "Ta razdelek bo vseboval seznam izdelkov.",
+    "search_placeholder": "Iskanje po imenu ali opisu",
     "select_a_unit": "select unit",
     "taxes": "Taxes",
     "item_attached_message": "Izdelka, ki je že v uporabi, ni mogoče izbrisati",

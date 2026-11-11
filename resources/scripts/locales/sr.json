@@ -256,6 +256,7 @@
     "edit_item": "Izmeni artikal",
     "no_items": "Još uvek nema artikala!",
     "list_of_items": "Ova sekcija će da sadrži spisak artikala.",
+    "search_placeholder": "Претрага по имену или опису",
     "select_a_unit": "odaberi jedinicu",
     "taxes": "Porezi",
     "item_attached_message": "Nije dozvoljeno brisanje artikla koji se koristi",

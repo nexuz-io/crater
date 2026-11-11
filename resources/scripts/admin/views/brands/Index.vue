@@ -7,9 +7,20 @@
       </BaseBreadcrumb>
 
       <template #actions>
-        <div class="flex items-center justify-end space-x-5">
+        <div
+          class="
+            flex flex-wrap
+            items-center justify-end
+            gap-2
+            sm:flex-nowrap sm:gap-5
+          "
+        >
           <BaseButton
             v-if="userStore.hasAbilities(abilities.CREATE_BRAND)"
+            class="
+              shrink-0
+              w-full sm:w-auto
+            "
             @click="addNewBrand"
           >
             <template #left="slotProps">
@@ -70,6 +81,7 @@
               px-3 sm:px-4
               w-full sm:w-auto
               justify-between sm:justify-start
+              gap-2 sm:gap-1.5
               lg:ml-auto
             "
             :aria-expanded="showFilters ? 'true' : 'false'"

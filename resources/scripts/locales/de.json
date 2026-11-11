@@ -256,6 +256,7 @@
     "edit_item": "Artikel bearbeiten",
     "no_items": "Keine Artikel vorhanden!",
     "list_of_items": "Dieser Bereich zeigt alle Artikel.",
+    "search_placeholder": "Suche nach Name oder Beschreibung",
     "select_a_unit": "Einheit auswählen",
     "taxes": "Steuern",
     "item_attached_message": "Ein Artikel der bereits verwendet wird kann nicht gelöscht werden",

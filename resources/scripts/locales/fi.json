@@ -256,6 +256,7 @@
     "edit_item": "Muokkaa tuotettä",
     "no_items": "Ei tallennettuja tuotteita!",
     "list_of_items": "Tämä osio sisältää luettelon tuotteista.",
+    "search_placeholder": "Hae nimellä tai kuvauksella",
     "select_a_unit": "Valitse yksikkö",
     "taxes": "Verot",
     "item_attached_message": "Tuotettä joka on käytössä ei voi poistaa",

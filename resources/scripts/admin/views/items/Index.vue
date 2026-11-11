@@ -7,10 +7,26 @@
       </BaseBreadcrumb>
 
       <template #actions>
-        <div class="flex items-center justify-end space-x-5">
+        <!-- Action cluster. On phones the cluster wraps to two
+             rows so the new-article CTA (the most important action)
+             never gets clipped behind the right edge of the viewport,
+             and the secondary shortcuts (Marcas, Familias) keep
+             their own row up top. From `sm` upward the same elements
+             collapse back into a single horizontal row. `shrink-0`
+             keeps each button at its full intrinsic width so flex
+             never collapses them to icons-only. -->
+        <div
+          class="
+            flex flex-wrap
+            items-center justify-end
+            gap-2
+            sm:flex-nowrap sm:gap-5
+          "
+        >
           <BaseButton
             v-if="userStore.hasAbilities(abilities.VIEW_BRAND)"
             variant="primary-outline"
+            class="shrink-0"
             @click="$router.push('/admin/brands')"
           >
             <template #left="slotProps">
@@ -22,6 +38,7 @@
           <BaseButton
             v-if="userStore.hasAbilities(abilities.VIEW_ITEM_FAMILY)"
             variant="primary-outline"
+            class="shrink-0"
             @click="$router.push('/admin/item-families')"
           >
             <template #left="slotProps">
@@ -32,6 +49,10 @@
 
           <BaseButton
             v-if="userStore.hasAbilities(abilities.CREATE_ITEM)"
+            class="
+              shrink-0
+              w-full sm:w-auto
+            "
             @click="$router.push('/admin/items/create')"
           >
             <template #left="slotProps">
@@ -98,6 +119,7 @@
               px-3 sm:px-4
               w-full sm:w-auto
               justify-between sm:justify-start
+              gap-2 sm:gap-1.5
               lg:ml-auto
             "
             :aria-expanded="showFilters ? 'true' : 'false'"

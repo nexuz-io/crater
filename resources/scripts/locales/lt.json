@@ -256,6 +256,7 @@
     "edit_item": "Redaguoti prekę",
     "no_items": "Prekių dar nėra!",
     "list_of_items": "Šiame skyriuje bus prekių sąrašas.",
+    "search_placeholder": "Ieškoti pagal pavadinimą ar aprašymą",
     "select_a_unit": "pasirinkite vienetą",
     "taxes": "Mokesčiai",
     "item_attached_message": "Negalima ištrinti prekės, kuri jau naudojama",
