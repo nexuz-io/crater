@@ -9,16 +9,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ItemFamilyFactory extends Factory
 {
-    /**
-     * The factory's corresponding model.
-     *
-     * @var string
-     */
     protected $model = ItemFamily::class;
 
-    /**
-     * @return array
-     */
     public function definition()
     {
         $companyId = Company::first()?->id ?? User::find(1)?->companies()->first()->id;
@@ -32,11 +24,6 @@ class ItemFamilyFactory extends Factory
         ];
     }
 
-    /**
-     * Convenience state to attach the family under a known parent
-     * within the same company. The caller passes the resolved
-     * parent record.
-     */
     public function childOf(ItemFamily $parent)
     {
         return $this->state(function () use ($parent) {
@@ -44,6 +31,22 @@ class ItemFamilyFactory extends Factory
                 'company_id' => $parent->company_id,
                 'parent_id' => $parent->id,
             ];
+        });
+    }
+
+    /**
+     * Plan 09 hotfix: tras aplicar overrides (`create(['name' => 'X'])`),
+     * recalculamos `name_normalized` desde el `name` final. Sin esto,
+     * el override de `name` deja `name_normalized` con el valor
+     * random de la fakería original y rompe el chequeo de sibling-
+     * uniqueness en ItemFamilyService::assertNoSiblingWithName.
+     */
+    public function configure(): static
+    {
+        return $this->afterMaking(function (ItemFamily $family) {
+            $family->name_normalized = ItemFamily::normalizeName(
+                (string) ($family->name ?? '')
+            );
         });
     }
 }
