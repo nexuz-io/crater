@@ -5,6 +5,7 @@ namespace Crater\Providers;
 use Crater\Services\Documents\Converters\EstimateToInvoiceConverter;
 use Crater\Services\Documents\Converters\RecurringToInvoiceConverter;
 use Crater\Services\Documents\DocumentConverterRegistry;
+use Crater\Services\Documents\DocumentSnapshotter;
 use Crater\Services\Documents\DocumentTotalsCalculator;
 use Crater\Services\Documents\DocumentWriter;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +24,7 @@ class DocumentServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(DocumentTotalsCalculator::class);
+        $this->app->singleton(DocumentSnapshotter::class);
 
         $this->app->singleton(DocumentWriter::class, function ($app) {
             return new DocumentWriter(

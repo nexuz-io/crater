@@ -62,6 +62,12 @@ class Invoice extends Model implements HasMedia
         'formattedInvoiceDate',
         'formattedDueDate',
         'invoicePdfUrl',
+        // Plan 09 §F7 — snapshots inmutables del cliente y direcciones.
+        // Para filas históricas (sin persistencia efectiva) el fall-back
+        // es el cliente/dirección vivos via DocumentSnapshotter.
+        'customerSnapshot',
+        'billingAddress',
+        'shippingAddress',
     ];
 
     public function transactions()
@@ -166,6 +172,50 @@ class Invoice extends Model implements HasMedia
     public function getFormattedNotesAttribute($value)
     {
         return $this->getNotes();
+    }
+
+    /**
+     * Plan 09 §F7 — Snapshot inmutable del cliente (CustomerSnapshot DTO).
+     *
+     * Para filas históricas (sin persistencia) hace fall-back al cliente
+     * vivo. Si la fila está en estado `customer_id = null`, devuelve null.
+     */
+    public function getCustomerSnapshotAttribute(): ?\Crater\DataObjects\Documents\CustomerSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotCustomer($this->customer);
+    }
+
+    public function getBillingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        $billing = method_exists($this->customer, 'billingAddress')
+            ? $this->customer->billingAddress()->first()
+            : null;
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotAddress($billing, \Crater\DataObjects\Documents\AddressSnapshot::TYPE_BILLING);
+    }
+
+    public function getShippingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        $shipping = method_exists($this->customer, 'shippingAddress')
+            ? $this->customer->shippingAddress()->first()
+            : null;
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotAddress($shipping, \Crater\DataObjects\Documents\AddressSnapshot::TYPE_SHIPPING);
     }
 
     public function getPaymentInformation()

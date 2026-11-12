@@ -36,7 +36,13 @@ class RecurringInvoice extends Model
         'formattedCreatedAt',
         'formattedStartsAt',
         'formattedNextInvoiceAt',
-        'formattedLimitDate'
+        'formattedLimitDate',
+        // Plan 09 §F7 — snapshots (RecurringInvoice queda fuera de la
+        // matriz HasHistoricalSnapshots pero mantiene simetría con
+        // Invoice/Estimate).
+        'customerSnapshot',
+        'billingAddress',
+        'shippingAddress',
     ];
 
     protected $casts = [
@@ -63,6 +69,50 @@ class RecurringInvoice extends Model
         $dateFormat = CompanySetting::getSetting('carbon_date_format', $this->company_id);
 
         return Carbon::parse($this->limit_date)->format($dateFormat);
+    }
+
+    /**
+     * Plan 09 §F7 — accessors de snapshot. RecurringInvoice queda fuera
+     * de la matriz HasHistoricalSnapshots del plan 06, pero añadimos los
+     * accessors por simetría con Invoice/Estimate (futuros converters
+     * pueden necesitar el snapshot al convertir Recurring → Invoice).
+     */
+    public function getCustomerSnapshotAttribute(): ?\Crater\DataObjects\Documents\CustomerSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotCustomer($this->customer);
+    }
+
+    public function getBillingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        $billing = method_exists($this->customer, 'billingAddress')
+            ? $this->customer->billingAddress()->first()
+            : null;
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotAddress($billing, \Crater\DataObjects\Documents\AddressSnapshot::TYPE_BILLING);
+    }
+
+    public function getShippingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        $shipping = method_exists($this->customer, 'shippingAddress')
+            ? $this->customer->shippingAddress()->first()
+            : null;
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotAddress($shipping, \Crater\DataObjects\Documents\AddressSnapshot::TYPE_SHIPPING);
     }
 
     public function getFormattedCreatedAtAttribute()
