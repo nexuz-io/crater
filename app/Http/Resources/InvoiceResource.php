@@ -39,6 +39,7 @@ class InvoiceResource extends JsonResource
             'template_name' => $this->template_name,
             'customer_id' => $this->customer_id,
             'recurring_invoice_id' => $this->recurring_invoice_id,
+            'from_estimate_id' => $this->from_estimate_id,
             'sequence_number' => $this->sequence_number,
             'exchange_rate' => $this->exchange_rate,
             'base_discount_val' => $this->base_discount_val,

@@ -87,7 +87,9 @@ final class EstimateToInvoiceConverter implements DocumentConverterInterface
         $templateName = $estimate->getInvoiceTemplateName();
         $exchange_rate = $estimate->exchange_rate;
 
-        // 28 campos (port literal del controller original).
+        // 28 campos (port literal del controller original, más `from_estimate_id`
+        // introducido por plan 09 §F5 — primera factura del campo nuevo en la
+        // creación; NULL pre-existente para Invoice creadas desde cero).
         $invoice = Invoice::create([
             'creator_id' => Auth::id(),
             'invoice_date' => $invoice_date->format('Y-m-d'),
@@ -119,6 +121,7 @@ final class EstimateToInvoiceConverter implements DocumentConverterInterface
             'currency_id' => $estimate->currency_id,
             'sales_tax_type' => $estimate->sales_tax_type,
             'sales_tax_address_type' => $estimate->sales_tax_address_type,
+            'from_estimate_id' => $estimate->id, // plan 09 §F5 — trazabilidad
         ]);
 
         $invoice->unique_hash = Hashids::connection(Invoice::class)->encode($invoice->id);

@@ -166,6 +166,41 @@ it('convert produce una Invoice con los 28 campos derivados del Estimate', funct
     // unique_hash con Hashids.
     expect($invoice->unique_hash)->not->toBeNull();
     expect(strlen($invoice->unique_hash))->toBeGreaterThan(0);
+
+    // Plan 09 §F5 — `from_estimate_id` propagado.
+    expect((int) $invoice->from_estimate_id)->toBe((int) $estimate->id);
+});
+
+it('Estimate::invoicesFromEstimate() navega la relacion inversa via FK', function () {
+    $user = User::find(1);
+    $company = $user->companies()->first();
+    $currency = Currency::find(1);
+    $customer = Customer::factory()->create([
+        'company_id' => $company->id,
+        'creator_id' => $user->id,
+        'currency_id' => $currency->id,
+    ]);
+
+    $estimate = Estimate::factory()->create([
+        'creator_id' => $user->id,
+        'company_id' => $company->id,
+        'customer_id' => $customer->id,
+        'currency_id' => $currency->id,
+        'exchange_rate' => 1,
+        'template_name' => 'estimate1',
+        'status' => Estimate::STATUS_DRAFT,
+        'unique_hash' => 'poc-f5-relation-'.time(),
+    ]);
+
+    $converter = new EstimateToInvoiceConverter();
+    $invoice = $converter->convert($estimate);
+
+    $estimate->refresh();
+
+    // `invoicesFromEstimate` devuelve la invoice hija.
+    expect($estimate->invoicesFromEstimate()->count())->toBe(1);
+    $childInvoice = $estimate->invoicesFromEstimate()->first();
+    expect((int) $childInvoice->id)->toBe((int) $invoice->id);
 });
 
 it('los items del estimate quedan como invoice_items del invoice', function () {
