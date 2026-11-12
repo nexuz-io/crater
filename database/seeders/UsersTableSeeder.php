@@ -14,6 +14,20 @@ class UsersTableSeeder extends Seeder
     /**
      * Run the database seeds.
      *
+     * Habilidades (super admin / admin / owner):
+     *   Se aplican vía la cadena:
+     *     $company->setupDefaultData()
+     *       -> $company->setupRoles()
+     *         -> BouncerFacade::scope()->to($company->id)
+     *         -> foreach (config('abilities.abilities')) { ... }
+     *   Cubierto en steps 3..7 del grupo. Plan 05 / plan 09 §F11
+     *   introduce `view-delivery-note` y compañía; están en
+     *   config/abilities.php y se aplican automáticamente sin
+     *   tocar este seeder. Si añades nuevas abilities, basta con
+     *   sumarlas a ese config y re-correr este seeder / la
+     *   migration `Grant{Doc}AbilitiesToExistingCompanies` para
+     *   installations existentes.
+     *
      * @return void
      */
     public function run()
@@ -42,3 +56,4 @@ class UsersTableSeeder extends Seeder
         Setting::setSetting('profile_complete', 0);
     }
 }
+
