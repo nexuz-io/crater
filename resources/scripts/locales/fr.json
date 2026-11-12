@@ -1838,6 +1838,7 @@
         "delivery_address": "Adresse de livraison",
         "delivery_date": "Date de livraison",
         "delivery_note": "Bon de livraison | Bons de livraison",
+        "delivery_note_viewed": "Le bon de livraison {number} a été consulté par le client",
         "delivery_note_date": "Date du bon de livraison",
         "delivery_note_default_terms_help": "Affiché sur les nouveaux bons de livraison. Texte brut, prend en charge `{COMPANY_NAME}` et les champs d'adresse.",
         "delivery_note_default_terms_label": "Conditions par défaut",

@@ -1838,6 +1838,7 @@
         "delivery_address": "Delivery Address",
         "delivery_date": "Delivery Date",
         "delivery_note": "Delivery Note | Delivery Notes",
+        "delivery_note_viewed": "Delivery Note {number} has been viewed by the customer",
         "delivery_note_date": "Delivery Note Date",
         "delivery_note_default_terms_help": "Shown on new delivery notes. Plain text, supports `{COMPANY_NAME}` and address fields.",
         "delivery_note_default_terms_label": "Default terms",

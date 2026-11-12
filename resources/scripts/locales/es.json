@@ -1635,6 +1635,7 @@
         "delivery_address": "Dirección de entrega",
         "delivery_date": "Fecha de entrega",
         "delivery_note": "Albarán | Albaranes",
+        "delivery_note_viewed": "El albarán {number} ha sido visto por el cliente",
         "delivery_note_date": "Fecha de albarán",
         "delivery_note_default_terms_help": "Se muestra en los nuevos albaranes. Texto plano, soporta `{COMPANY_NAME}` y campos de dirección.",
         "delivery_note_default_terms_label": "Términos por defecto",

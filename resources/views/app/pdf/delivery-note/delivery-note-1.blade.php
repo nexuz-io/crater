@@ -57,7 +57,27 @@
         .shipping-address-container { padding-top: 30px; float: right; padding-right: 30px; width: 50%; }
         .shipping-address-label    { font-size: 12px; line-height: 18px; color: #55547A; }
 
-        .customer-addresses-row { clear: both; margin-top: 260px; }
+        /* Delivery address row — plan 05 §7 requirement. */
+        .delivery-address-block {
+            clear: both;
+            padding: 10px 30px 0 30px;
+            margin-top: 10px;
+            background: rgba(85, 84, 122, 0.04);
+            border-left: 3px solid #55547A;
+        }
+        .delivery-address-label {
+            font-size: 11px;
+            line-height: 18px;
+            color: #55547A;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .delivery-address-value {
+            font-size: 12px;
+            line-height: 18px;
+        }
+
+        .customer-addresses-row { clear: both; margin-top: 30px; }
 
         /* -- Items table -- */
         .items-table { width: 100%; padding: 30px 30px 30px 30px; }
@@ -67,6 +87,26 @@
         .qty-cell     { width: 50px;  text-align: center; }
         .name-cell    { text-align: left; }
         .unit-cell    { width: 90px;  text-align: center; }
+
+        /* Optional price columns — width collapse when not displayed. */
+        .price-cell   { width: 80px;  text-align: right; }
+        .total-cell   { width: 90px;  text-align: right; }
+        .hidden-col   { display: none; }
+
+        /* -- Status badge -- */
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 3px;
+            color: #fff;
+        }
+        .status-DRAFT     { background: #999999; }
+        .status-DELIVERED { background: #2c9f4a; }
+        .status-CANCELLED { background: #c0392b; }
 
         /* -- Notes -- */
         .notes-block { padding: 30px; font-size: 12px; line-height: 18px; }
@@ -111,12 +151,14 @@
             <td class="attribute-label">@lang('delivery_note_date_label')</td>
             <td>{{ $deliveryNote->delivery_date ? \Carbon\Carbon::parse($deliveryNote->delivery_date)->format(app_date_format()) : '' }}</td>
         </tr>
-        @if($deliveryNote->status)
-            <tr>
-                <td class="attribute-label">@lang('status')</td>
-                <td>{{ $deliveryNote->status }}</td>
-            </tr>
-        @endif
+        <tr>
+            <td class="attribute-label">@lang('status')</td>
+            <td>
+                <span class="status-badge status-{{ $deliveryNote->status }}">
+                    {{ $deliveryNote->status }}
+                </span>
+            </td>
+        </tr>
     </table>
 </div>
 
@@ -138,6 +180,19 @@
     </div>
 </div>
 
+{{--
+    Plan 05 §7 + plan 09 §F11 — la dirección de entrega es un dato
+    propio del albarán (no la billing/shipping del cliente). Se imprime
+    sólo cuando está presente. Se renderiza entre las direcciones del
+    cliente y la tabla de líneas.
+--}}
+@if(!empty($delivery_address))
+    <div class="delivery-address-block">
+        <div class="delivery-address-label">@lang('delivery-notes.delivery_address')</div>
+        <div class="delivery-address-value">{!! nl2br(e($delivery_address)) !!}</div>
+    </div>
+@endif
+
 <hr>
 
 <table class="items-table">
@@ -146,6 +201,10 @@
             <th class="qty-cell">@lang('qty')</th>
             <th class="name-cell">@lang('description')</th>
             <th class="unit-cell">@lang('unit')</th>
+            @if(!empty($show_prices))
+                <th class="price-cell">@lang('price')</th>
+                <th class="total-cell">@lang('total')</th>
+            @endif
         </tr>
     </thead>
     <tbody>
@@ -159,6 +218,10 @@
                     @endif
                 </td>
                 <td class="unit-cell">{{ $item->unit ?? '' }}</td>
+                @if(!empty($show_prices))
+                    <td class="price-cell">{!! format_money_pdf($item->price, $customer->currency ?? null) !!}</td>
+                    <td class="total-cell">{!! format_money_pdf($item->total, $customer->currency ?? null) !!}</td>
+                @endif
             </tr>
         @endforeach
     </tbody>
