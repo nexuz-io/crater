@@ -108,6 +108,18 @@ const RecurringInvoiceCreate = () =>
 const RecurringInvoiceView = () =>
   import('@/scripts/admin/views/recurring-invoices/View.vue')
 
+// Delivery Notes (plan 09 §F11 frontend). Las vistas .vue se crean
+// en un PR posterior de UI; aqui se declaran las rutas para no
+// diferir la integracion del resource backend + sidebar.
+const DeliveryNoteIndex = () =>
+  import('@/scripts/admin/views/delivery-notes/Index.vue')
+const DeliveryNoteCreate = () =>
+  import(
+    '@/scripts/admin/views/delivery-notes/create/DeliveryNoteCreate.vue'
+  )
+const DeliveryNoteView = () =>
+  import('@/scripts/admin/views/delivery-notes/View.vue')
+
 // Reports
 const ReportsIndex = () =>
   import('@/scripts/admin/views/reports/layout/Index.vue')
@@ -520,6 +532,32 @@ export default [
         name: 'recurring-invoices.edit',
         meta: { ability: abilities.EDIT_RECURRING_INVOICE },
         component: RecurringInvoiceCreate,
+      },
+
+      // Delivery Notes
+      {
+        path: 'delivery-notes',
+        name: 'delivery-notes.index',
+        meta: { ability: abilities.VIEW_DELIVERY_NOTE },
+        component: DeliveryNoteIndex,
+      },
+      {
+        path: 'delivery-notes/create',
+        name: 'delivery-notes.create',
+        meta: { ability: abilities.CREATE_DELIVERY_NOTE },
+        component: DeliveryNoteCreate,
+      },
+      {
+        path: 'delivery-notes/:id/view',
+        name: 'delivery-notes.view',
+        meta: { ability: abilities.VIEW_DELIVERY_NOTE },
+        component: DeliveryNoteView,
+      },
+      {
+        path: 'delivery-notes/:id/edit',
+        name: 'delivery-notes.edit',
+        meta: { ability: abilities.EDIT_DELIVERY_NOTE },
+        component: DeliveryNoteCreate,
       },
 
       // Modules

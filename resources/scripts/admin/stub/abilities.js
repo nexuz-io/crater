@@ -58,6 +58,18 @@ export default {
   EDIT_RECURRING_INVOICE: 'edit-recurring-invoice',
   VIEW_RECURRING_INVOICE: 'view-recurring-invoice',
 
+  // Delivery Notes (plan 09 §F11). Habilita la integración frontend:
+  // las rutas /admin/delivery-notes/* consumen estos flags en su
+  // `meta.ability` para esconder los enlaces del sidebar y los
+  // botones de operaciones. El `*_ALL` no existe — la combinacion
+  // `view + create + ...` es la forma natural (matriz plan 06).
+  CREATE_DELIVERY_NOTE: 'create-delivery-note',
+  DELETE_DELIVERY_NOTE: 'delete-delivery-note',
+  EDIT_DELIVERY_NOTE: 'edit-delivery-note',
+  VIEW_DELIVERY_NOTE: 'view-delivery-note',
+  SEND_DELIVERY_NOTE: 'send-delivery-note',
+  CONVERT_DELIVERY_NOTE_INVOICE: 'convert-delivery-note-invoice',
+
   // Payment
   CREATE_PAYMENT: 'create-payment',
   DELETE_PAYMENT: 'delete-payment',

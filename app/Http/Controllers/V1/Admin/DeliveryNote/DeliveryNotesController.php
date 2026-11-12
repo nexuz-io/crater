@@ -4,6 +4,7 @@ namespace Crater\Http\Controllers\V1\Admin\DeliveryNote;
 
 use Crater\Http\Controllers\Controller;
 use Crater\Http\Requests\DeliveryNoteRequest;
+use Crater\Http\Resources\DeliveryNoteResource;
 use Crater\Models\DeliveryNote;
 use Illuminate\Http\Request;
 
@@ -21,16 +22,20 @@ class DeliveryNotesController extends Controller
         $user = $request->user();
         $companyId = (int) $request->header('company');
 
-        return DeliveryNote::where('company_id', $companyId)
-            ->orderByDesc('delivery_date')
-            ->paginate(20);
+        return DeliveryNoteResource::collection(
+            DeliveryNote::where('company_id', $companyId)
+                ->orderByDesc('delivery_date')
+                ->paginate(20)
+        );
     }
 
     public function show(Request $request, DeliveryNote $delivery_note)
     {
         $this->authorize('view', $delivery_note);
 
-        return $delivery_note->load('items', 'taxes', 'customer');
+        return new DeliveryNoteResource(
+            $delivery_note->load('items', 'taxes', 'customer')
+        );
     }
 
     public function store(DeliveryNoteRequest $request)
@@ -58,7 +63,9 @@ class DeliveryNotesController extends Controller
             }
         }
 
-        return $deliveryNote->load('items', 'taxes');
+        return new DeliveryNoteResource(
+            $deliveryNote->load('items', 'taxes')
+        );
     }
 
     public function update(DeliveryNoteRequest $request, DeliveryNote $delivery_note)
@@ -67,7 +74,9 @@ class DeliveryNotesController extends Controller
 
         $delivery_note->update($request->validated());
 
-        return $delivery_note->fresh()->load('items', 'taxes');
+        return new DeliveryNoteResource(
+            $delivery_note->fresh()->load('items', 'taxes')
+        );
     }
 
     public function destroy(Request $request, DeliveryNote $delivery_note)
