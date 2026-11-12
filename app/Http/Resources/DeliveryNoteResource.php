@@ -89,11 +89,26 @@ class DeliveryNoteResource extends JsonResource
             'already_billed' => $this->alreadyBilled(),
             'delivery_note_pdf_url' => $this->deliveryNotePdfUrl,
 
-            // Items / taxes / customer — opcionales, null cuando
-            // el cliente del API no las eager-load. El frontend
-            // consume paginación aparte para listas grandes.
+            // Items / taxes — opcionales, null cuando el cliente del
+            // API no las eager-load.
             'items' => \Crater\Http\Resources\DeliveryNoteItemResource::collection($this->whenLoaded('items')),
             'taxes' => \Crater\Http\Resources\TaxResource::collection($this->whenLoaded('taxes')),
+
+            // Customer — pivot del listado admin:
+            //   - Index.vue cell-name:  row.data.customer.name
+            //   - Index.vue cell-total: row.data.customer.currency
+            //
+            // `$this->when(boolean, callback)` ejecuta el callback (con
+            // un CustomerResource) cuando el boolean es true; en otro
+            // caso la key se omite del payload (MissingValue). No
+            // usamos `whenLoaded` porque el controller index no
+            // carga eager — sólo emite`.customer()->exists()` que cae en
+            // lazy-load; eso es N+1 aceptable para Crater (mismo trato
+            // que InvoiceResource.php). El controller de admin hace
+            // `->with('customer')` para acortar esto a 2 queries.
+            'customer' => $this->when($this->customer()->exists(), function () {
+                return new \Crater\Http\Resources\CustomerResource($this->customer);
+            }),
         ];
     }
 }

@@ -29,8 +29,22 @@ class DeliveryNotesController extends Controller
         $user = $request->user();
         $companyId = (int) $request->header('company');
 
+        // Eager-load customer: el Index.vue del admin lee
+        // `row.data.customer.name` y `row.data.customer.currency`
+        // (cell-name y cell-total). Sin eager-load esto haría N+1
+        // queries en listados de 20+ items. La relación ya existe
+        // en la migration (FK customer_id) y el modelo declara
+        // belongsTo; with('customer') la pre-resuelve.
+        //
+        // No podemos eager-load `customer.items` porque la relación
+        // `customer` es BelongsTo (no soporta anidar HasMany). Si
+        // algún día necesitamos los items en el listado, mejor
+        // cargar también `with('items')` aquí, o dejar al Resource
+        // que los pida bajo `whenLoaded('items')` (que es lo que
+        // tenemos hoy).
         return DeliveryNoteResource::collection(
-            DeliveryNote::where('company_id', $companyId)
+            DeliveryNote::with('customer')
+                ->where('company_id', $companyId)
                 ->orderByDesc('delivery_date')
                 ->paginate(20)
         );
