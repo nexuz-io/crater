@@ -2,7 +2,7 @@
     "navigation": {
         "dashboard": "Tablero",
         "customers": "Clientes",
-        "delivery-notes": "Albaranes",
+        "delivery-notes": "Notas de entrega",
         "items": "Artículos",
         "invoices": "Facturas",
         "recurring-invoices": "Facturas recurrentes",
