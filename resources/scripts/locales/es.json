@@ -1062,6 +1062,25 @@
                 "payment_email_attachment_setting_description": "Activa esto si quieres enviar los pagos como archivo adjunto de correo electrónico. Tenga en cuenta que el botón 'Ver pago' en los correos electrónicos ya no se mostrará cuando esté habilitado.",
                 "payment_settings_updated": "Los métodos de pago se han actualizado correctamente"
             },
+            "delivery_notes": {
+                "title": "Notas de entrega",
+                "delivery_note_number_format": "Formato del número de nota de entrega",
+                "delivery_note_number_format_description": "Personalice cómo se genera automáticamente el número de su nota de entrega al crear una nueva.",
+                "preview_delivery_note_number": "Previsualizar número de nota de entrega",
+                "default_formats": "Formatos predeterminados",
+                "default_formats_description": "Los formatos indicados a continuación se utilizan para autocompletar los campos al crear una nota de entrega.",
+                "default_delivery_note_email_body": "Cuerpo predeterminado del correo de nota de entrega",
+                "delivery_note_settings_section": "Configuración de notas de entrega",
+                "delivery_note_default_terms_help": "Se muestra en las nuevas notas de entrega. Texto plano, soporta `{COMPANY_NAME}` y campos de dirección.",
+                "delivery_note_default_terms_label": "Términos por defecto",
+                "delivery_note_email_attachment": "Enviar notas de entrega como adjunto",
+                "delivery_note_email_attachment_description": "Activa esto si quieres enviar la nota de entrega como archivo adjunto de correo electrónico. Ten en cuenta que el botón 'Ver Nota de entrega' ya no se mostrará en los correos cuando esté habilitado.",
+                "delivery_note_settings_updated": "Configuración de notas de entrega actualizada correctamente",
+                "display_prices_on_pdf": "¿Mostrar precios en el PDF de la nota de entrega?",
+                "display_prices_on_pdf_description": "Por defecto el PDF de la nota de entrega omite los precios unitarios (plan 05 §1). Activa para mostrarlos.",
+                "auto_generate_delivery_note": "Auto-generar número de nota de entrega",
+                "auto_generate_delivery_note_description": "Cuando está activado, el siguiente número disponible se rellena automáticamente al crear una nueva nota de entrega."
+            },
             "items": {
                 "title": "Artículos",
                 "units": "unidades",

@@ -85,7 +85,18 @@ class SerialNumberFormatter
      */
     public function getNextNumber($data = null)
     {
-        $modelName = strtolower(class_basename($this->model));
+        // `Str::snake(class_basename($this->model))` produce la clave
+        // de settings esperada:
+        //   Invoice      -> invoice_number_format
+        //   Estimate     -> estimate_number_format
+        //   Payment      -> payment_number_format
+        //   DeliveryNote -> delivery_note_number_format  (compuesto)
+        //
+        // Antes se hacia con `strtolower(class_basename(...))` que daba
+        // `deliverynote` para DeliveryNote (sin guion bajo) — bug
+        // introducido por plan 05/09 §F11 al añadir un doc con nombre
+        // compuesto; corregido aquí al estándar Laravel snake_case.
+        $modelName = \Illuminate\Support\Str::snake(class_basename($this->model));
         $settingKey = $modelName.'_number_format';
         $companyId = $this->company;
 

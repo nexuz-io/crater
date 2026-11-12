@@ -1206,6 +1206,25 @@
                 "payment_email_attachment_setting_description": "Activez cette option si vous souhaitez envoyer les reçus de paiement en pièces jointes. Le bouton \"Afficher le reçu de paiement\" n'apparaîtra plus dans l'email.",
                 "payment_settings_updated": "Paramètres mis à jour"
             },
+            "delivery_notes": {
+                "title": "Bons de livraison",
+                "delivery_note_number_format": "Format du numéro de bon de livraison",
+                "delivery_note_number_format_description": "Personnalisez la structure du numéro de bon de livraison généré automatiquement lors de la création.",
+                "preview_delivery_note_number": "Aperçu du numéro de bon de livraison",
+                "default_formats": "Formats par défaut",
+                "default_formats_description": "Les formats ci-dessous sont utilisés pour pré-remplir les champs à la création d'un bon de livraison.",
+                "default_delivery_note_email_body": "Modèle d'email par défaut",
+                "delivery_note_settings_section": "Paramètres des bons de livraison",
+                "delivery_note_default_terms_help": "Affiché sur les nouveaux bons de livraison. Texte brut, prend en charge `{COMPANY_NAME}` et les champs d'adresse.",
+                "delivery_note_default_terms_label": "Conditions par défaut",
+                "delivery_note_email_attachment": "Envoyer les bons de livraison en pièces jointes",
+                "delivery_note_email_attachment_description": "Activez cette option pour envoyer le bon de livraison en pièce jointe. Le bouton « Voir le bon de livraison » n'apparaîtra plus dans l'email.",
+                "delivery_note_settings_updated": "Paramètres des bons de livraison mis à jour",
+                "display_prices_on_pdf": "Afficher les prix sur le PDF du bon de livraison ?",
+                "display_prices_on_pdf_description": "Par défaut, le PDF du bon de livraison omet les prix unitaires (plan 05 §1). Activez pour les afficher.",
+                "auto_generate_delivery_note": "Générer automatiquement le numéro de bon de livraison",
+                "auto_generate_delivery_note_description": "Lorsqu'activé, le prochain numéro disponible est rempli automatiquement lors de la création d'un nouveau bon de livraison."
+            },
             "items": {
                 "title": "Services",
                 "units": "Unités",

@@ -18,6 +18,13 @@
 
         <BaseTab
           tab-panel-container="py-4 mt-px"
+          :title="$t('settings.customization.delivery_notes.title')"
+        >
+          <DeliveryNotesTab />
+        </BaseTab>
+
+        <BaseTab
+          tab-panel-container="py-4 mt-px"
           :title="$t('settings.customization.payments.title')"
         >
           <PaymentsTab />
@@ -39,4 +46,5 @@ import InvoicesTab from '@/scripts/admin/views/settings/customization/invoices/I
 import EstimatesTab from '@/scripts/admin/views/settings/customization/estimates/EstimatesTab.vue'
 import PaymentsTab from '@/scripts/admin/views/settings/customization/payments/PaymentsTab.vue'
 import ItemsTab from '@/scripts/admin/views/settings/customization/items/ItemsTab.vue'
+import DeliveryNotesTab from '@/scripts/admin/views/settings/customization/delivery-notes/DeliveryNotesTab.vue'
 </script>

@@ -3,6 +3,7 @@
 namespace Crater\Http\Controllers\V1\Admin\General;
 
 use Crater\Http\Controllers\Controller;
+use Crater\Models\DeliveryNote;
 use Crater\Models\Estimate;
 use Crater\Models\Invoice;
 use Crater\Models\Payment;
@@ -17,7 +18,7 @@ class NextNumberController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function __invoke(Request $request, Invoice $invoice, Estimate $estimate, Payment $payment)
+    public function __invoke(Request $request, Invoice $invoice, Estimate $estimate, Payment $payment, DeliveryNote $delivery_note)
     {
         $key = $request->key;
         $nextNumber = null;
@@ -48,6 +49,13 @@ class NextNumberController extends Controller
 
                     break;
 
+                case 'delivery_note':
+                    $nextNumber = $serial->setModel($delivery_note)
+                        ->setModelObject($request->model_id)
+                        ->getNextNumber();
+
+                    break;
+
                 default:
                     return;
             }
@@ -64,3 +72,4 @@ class NextNumberController extends Controller
         ]);
     }
 }
+

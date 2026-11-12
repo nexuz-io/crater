@@ -1206,6 +1206,25 @@
                 "payment_email_attachment_setting_description": "Enable this if you want to send the payment receipts as an email attachment. Please note that 'View Payment' button in emails will not be displayed anymore when enabled.",
                 "payment_settings_updated": "Payment Settings updated successfully"
             },
+            "delivery_notes": {
+                "title": "Delivery Notes",
+                "delivery_note_number_format": "Delivery Note Number Format",
+                "delivery_note_number_format_description": "Customize how your delivery note number gets generated automatically when you create a new delivery note.",
+                "preview_delivery_note_number": "Preview Delivery Note Number",
+                "default_formats": "Default Formats",
+                "default_formats_description": "Below given formats are used to fill up the fields automatically on delivery note creation.",
+                "default_delivery_note_email_body": "Default Delivery Note Email Body",
+                "delivery_note_settings_section": "Delivery Note Settings",
+                "delivery_note_default_terms_help": "Shown on new delivery notes. Plain text, supports `{COMPANY_NAME}` and address fields.",
+                "delivery_note_default_terms_label": "Default terms",
+                "delivery_note_email_attachment": "Send delivery notes as attachments",
+                "delivery_note_email_attachment_description": "Enable this if you want to send the delivery note as an email attachment. Please note that 'View Delivery Note' button in emails will not be displayed anymore when enabled.",
+                "delivery_note_settings_updated": "Delivery Note Settings updated successfully",
+                "display_prices_on_pdf": "Display prices on delivery note PDF?",
+                "display_prices_on_pdf_description": "By default the delivery note PDF omits unit prices (plan 05 §1). Enable to show prices.",
+                "auto_generate_delivery_note": "Auto-generate Delivery Note Number",
+                "auto_generate_delivery_note_description": "When enabled, the next available number is automatically filled when creating a new delivery note."
+            },
             "items": {
                 "title": "Services",
                 "units": "Units",
