@@ -21,7 +21,11 @@ class ConvertEstimateController extends Controller
 {
     public function __invoke(Request $request, Estimate $estimate, DocumentConverterRegistry $registry)
     {
-        $this->authorize('create', Invoice::class);
+        // Plan 09 §F6 (D7): separamos la autorización de la conversión de
+        // la autorización de crear invoices. Roles con `create-invoice` NO
+        // heredan automáticamente la conversión; se requiere el ability
+        // opt-in `convert-estimate-invoice`.
+        $this->authorize('convert-estimate-invoice', $estimate);
 
         $converter = $registry->get('estimate', 'invoice');
 

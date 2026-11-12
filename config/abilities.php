@@ -232,6 +232,21 @@ return [
             "ability" => "send-estimate",
             "model" => Estimate::class,
         ],
+        [
+            "name" => "convert estimate to invoice",
+            "ability" => "convert-estimate-invoice",
+            "model" => Estimate::class,
+            'owner_only' => false,
+            "depends_on" => [
+                'view-estimate',
+                'view-item',
+                'view-tax-type',
+                'view-customer',
+                'view-invoice',
+                'view-custom-field',
+                'view-all-notes',
+            ],
+        ],
 
         // Invoice
         [

@@ -6,12 +6,15 @@ use Crater\Http\Requests\DeleteEstimatesRequest;
 use Crater\Http\Requests\EstimatesRequest;
 use Crater\Http\Requests\SendEstimatesRequest;
 use Crater\Mail\SendEstimateMail;
+use Crater\Models\Company;
+use Crater\Models\Customer;
 use Crater\Models\Estimate;
 use Crater\Models\EstimateItem;
 use Crater\Models\Tax;
 use Crater\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Laravel\Sanctum\Sanctum;
+use Silber\Bouncer\BouncerFacade;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
@@ -226,6 +229,47 @@ test('create invoice from estimate', function () {
     ]);
 
     $response = postJson("api/v1/estimates/{$estimate->id}/convert-to-invoice")
+        ->assertStatus(200);
+});
+
+test('unauthorized user cannot convert estimate', function () {
+    // Plan 09 §F6: usuario SIN ability `convert-estimate-invoice` recibe 403.
+    // El super admin (User 1) sí lo tiene; aquí construimos un user "no_converter"
+    // dentro del scope de la misma company y verificamos el 403.
+    $company = User::find(1)->companies()->first();
+
+    $estimate = Estimate::factory()->create([
+        'estimate_date' => '1988-07-18',
+        'expiry_date' => '1988-08-18',
+    ]);
+
+    BouncerFacade::scope()->to($company->id);
+
+    $forbiddenRole = BouncerFacade::role()->firstOrCreate([
+        'name' => 'no_converter',
+        'title' => 'No Converter',
+        'scope' => $company->id,
+    ]);
+
+    $forbiddenUser = User::factory()->create([
+        'email' => 'no-converter@example.com',
+    ]);
+
+    $forbiddenUser->companies()->attach($company->id);
+    BouncerFacade::assign($forbiddenRole)->to($forbiddenUser);
+    BouncerFacade::allow($forbiddenRole)->to('view-estimate', Estimate::class);
+    // NO se otorga `convert-estimate-invoice`: ese es el punto.
+
+    Sanctum::actingAs($forbiddenUser, ['*']);
+    $this->withHeaders(['company' => $company->id]);
+
+    postJson("api/v1/estimates/{$estimate->id}/convert-to-invoice")
+        ->assertForbidden();
+
+    // Sanity: el admin (super) sigue pudiendo convertir.
+    Sanctum::actingAs(User::find(1), ['*']);
+    $this->withHeaders(['company' => $company->id]);
+    postJson("api/v1/estimates/{$estimate->id}/convert-to-invoice")
         ->assertStatus(200);
 });
 
