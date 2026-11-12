@@ -138,6 +138,23 @@ class EstimatePolicy
     }
 
     /**
+     * Plan 09 §F6 (D7) — ability específico para conversión Estimate → Invoice.
+     *
+     * Aplica el gate `convert-estimate-invoice` definido en
+     * AuthServiceProvider. Distinguido de `create-invoice` para que un
+     * rol con `create-invoice` no implique automáticamente la capacidad
+     * de convertir presupuestos; este flujo es opt-in desde el producto.
+     */
+    public function convertToInvoice(User $user, Estimate $estimate)
+    {
+        if (BouncerFacade::can('convert-estimate-invoice', $estimate) && $user->hasCompany($estimate->company_id)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Determine whether the user can delete models.
      *
      * @param  \Crater\Models\User  $user

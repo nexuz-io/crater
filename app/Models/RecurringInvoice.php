@@ -36,7 +36,13 @@ class RecurringInvoice extends Model
         'formattedCreatedAt',
         'formattedStartsAt',
         'formattedNextInvoiceAt',
-        'formattedLimitDate'
+        'formattedLimitDate',
+        // Plan 09 §F7 — snapshots (RecurringInvoice queda fuera de la
+        // matriz HasHistoricalSnapshots pero mantiene simetría con
+        // Invoice/Estimate).
+        'customerSnapshot',
+        'billingAddress',
+        'shippingAddress',
     ];
 
     protected $casts = [
@@ -63,6 +69,50 @@ class RecurringInvoice extends Model
         $dateFormat = CompanySetting::getSetting('carbon_date_format', $this->company_id);
 
         return Carbon::parse($this->limit_date)->format($dateFormat);
+    }
+
+    /**
+     * Plan 09 §F7 — accessors de snapshot. RecurringInvoice queda fuera
+     * de la matriz HasHistoricalSnapshots del plan 06, pero añadimos los
+     * accessors por simetría con Invoice/Estimate (futuros converters
+     * pueden necesitar el snapshot al convertir Recurring → Invoice).
+     */
+    public function getCustomerSnapshotAttribute(): ?\Crater\DataObjects\Documents\CustomerSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotCustomer($this->customer);
+    }
+
+    public function getBillingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        $billing = method_exists($this->customer, 'billingAddress')
+            ? $this->customer->billingAddress()->first()
+            : null;
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotAddress($billing, \Crater\DataObjects\Documents\AddressSnapshot::TYPE_BILLING);
+    }
+
+    public function getShippingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        $shipping = method_exists($this->customer, 'shippingAddress')
+            ? $this->customer->shippingAddress()->first()
+            : null;
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotAddress($shipping, \Crater\DataObjects\Documents\AddressSnapshot::TYPE_SHIPPING);
     }
 
     public function getFormattedCreatedAtAttribute()
@@ -298,88 +348,9 @@ class RecurringInvoice extends Model
 
     public function createInvoice()
     {
-        //get invoice_number
-        $serial = (new SerialNumberFormatter())
-            ->setModel(new Invoice())
-            ->setCompany($this->company_id)
-            ->setCustomer($this->customer_id)
-            ->setNextNumbers();
-
-        $days = CompanySetting::getSetting('invoice_due_date_days', $this->company_id);
-
-        if (! $days || $days == "null") {
-            $days = 7;
-        }
-
-        $newInvoice['creator_id'] = $this->creator_id;
-        $newInvoice['invoice_date'] = Carbon::today()->format('Y-m-d');
-        $newInvoice['due_date'] = Carbon::today()->addDays((int) $days)->format('Y-m-d');
-        $newInvoice['status'] = Invoice::STATUS_DRAFT;
-        $newInvoice['company_id'] = $this->company_id;
-        $newInvoice['paid_status'] = Invoice::STATUS_UNPAID;
-        $newInvoice['sub_total'] = $this->sub_total;
-        $newInvoice['tax_per_item'] = $this->tax_per_item;
-        $newInvoice['discount_per_item'] = $this->discount_per_item;
-        $newInvoice['tax'] = $this->tax;
-        $newInvoice['total'] = $this->total;
-        $newInvoice['customer_id'] = $this->customer_id;
-        $newInvoice['currency_id'] = Customer::find($this->customer_id)->currency_id;
-        $newInvoice['template_name'] = $this->template_name;
-        $newInvoice['due_amount'] = $this->total;
-        $newInvoice['recurring_invoice_id'] = $this->id;
-        $newInvoice['discount_val'] = $this->discount_val;
-        $newInvoice['discount'] = $this->discount;
-        $newInvoice['discount_type'] = $this->discount_type;
-        $newInvoice['notes'] = $this->notes;
-        $newInvoice['exchange_rate'] = $this->exchange_rate;
-        $newInvoice['sales_tax_type'] = $this->sales_tax_type;
-        $newInvoice['sales_tax_address_type'] = $this->sales_tax_address_type;
-        $newInvoice['invoice_number'] = $serial->getNextNumber();
-        $newInvoice['sequence_number'] = $serial->nextSequenceNumber;
-        $newInvoice['customer_sequence_number'] = $serial->nextCustomerSequenceNumber;
-        $newInvoice['base_due_amount'] = $this->exchange_rate * $this->due_amount;
-        $newInvoice['base_discount_val'] = $this->exchange_rate * $this->discount_val;
-        $newInvoice['base_sub_total'] = $this->exchange_rate * $this->sub_total;
-        $newInvoice['base_tax'] = $this->exchange_rate * $this->tax;
-        $newInvoice['base_total'] = $this->exchange_rate * $this->total;
-        $invoice = Invoice::create($newInvoice);
-        $invoice->unique_hash = Hashids::connection(Invoice::class)->encode($invoice->id);
-        $invoice->save();
-
-        $this->load('items.taxes');
-        Invoice::createItems($invoice, $this->items->toArray());
-
-        if ($this->taxes()->exists()) {
-            Invoice::createTaxes($invoice, $this->taxes->toArray());
-        }
-
-        if ($this->fields()->exists()) {
-            $customField = [];
-
-            foreach ($this->fields as $data) {
-                $customField[] = [
-                    'id' => $data->custom_field_id,
-                    'value' => $data->defaultAnswer
-                ];
-            }
-
-            $invoice->addCustomFields($customField);
-        }
-
-        //send automatically
-        if ($this->send_automatically == true) {
-            $data = [
-                'body' => CompanySetting::getSetting('invoice_mail_body', $this->company_id),
-                'from' => config('mail.from.address'),
-                'to' => $this->customer->email,
-                'subject' => 'New Invoice',
-                'invoice' => $invoice->toArray(),
-                'customer' => $invoice->customer->toArray(),
-                'company' => Company::find($invoice->company_id)
-            ];
-
-            $invoice->send($data);
-        }
+        return app(\Crater\Services\Documents\DocumentConverterRegistry::class)
+            ->get('recurring-invoice', 'invoice')
+            ->convert($this);
     }
 
     public function markStatusAsCompleted()

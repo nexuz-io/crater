@@ -31,6 +31,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         \Crater\Models\Customer::class => \Crater\Policies\CustomerPolicy::class,
+        \Crater\Models\DeliveryNote::class => \Crater\Policies\DeliveryNotePolicy::class,
         \Crater\Models\Invoice::class => \Crater\Policies\InvoicePolicy::class,
         \Crater\Models\Estimate::class => \Crater\Policies\EstimatePolicy::class,
         \Crater\Models\Payment::class => \Crater\Policies\PaymentPolicy::class,
@@ -75,6 +76,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('send invoice', [InvoicePolicy::class, 'send']);
         Gate::define('send estimate', [EstimatePolicy::class, 'send']);
         Gate::define('send payment', [PaymentPolicy::class, 'send']);
+        Gate::define('convert estimate to invoice', [EstimatePolicy::class, 'convertToInvoice']);
 
         Gate::define('delete multiple items', [ItemPolicy::class, 'deleteMultiple']);
         Gate::define('delete multiple customers', [CustomerPolicy::class, 'deleteMultiple']);

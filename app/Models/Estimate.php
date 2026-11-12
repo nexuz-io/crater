@@ -43,6 +43,10 @@ class Estimate extends Model implements HasMedia
         'formattedExpiryDate',
         'formattedEstimateDate',
         'estimatePdfUrl',
+        // Plan 09 §F7 — snapshots.
+        'customerSnapshot',
+        'billingAddress',
+        'shippingAddress',
     ];
 
     protected $guarded = ['id'];
@@ -96,11 +100,66 @@ class Estimate extends Model implements HasMedia
         return $this->hasMany(Tax::class);
     }
 
+    /**
+     * Plan 09 §F5 — Invoices derivadas de esta Estimate.
+     *
+     * Relación inversa a `invoices.from_estimate_id` (FK introducida
+     * por la migración `2026_11_11_140000_add_from_estimate_id_to_invoices_table`).
+     * Usada en futuros listados y reportes para navegar Estimate → Invoices.
+     */
+    public function invoicesFromEstimate()
+    {
+        return $this->hasMany(Invoice::class, 'from_estimate_id');
+    }
+
     public function getFormattedExpiryDateAttribute($value)
     {
         $dateFormat = CompanySetting::getSetting('carbon_date_format', $this->company_id);
 
         return Carbon::parse($this->expiry_date)->format($dateFormat);
+    }
+
+    /**
+     * Plan 09 §F7 — accessors de snapshot. Mismo patrón que Invoice.
+     * Se aplican a Estimate para que `Estimate` también cumpla
+     * `HasHistoricalSnapshots` desde el punto de vista del cliente.
+     */
+    public function getCustomerSnapshotAttribute(): ?\Crater\DataObjects\Documents\CustomerSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotCustomer($this->customer);
+    }
+
+    public function getBillingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        $billing = method_exists($this->customer, 'billingAddress')
+            ? $this->customer->billingAddress()->first()
+            : null;
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotAddress($billing, \Crater\DataObjects\Documents\AddressSnapshot::TYPE_BILLING);
+    }
+
+    public function getShippingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    {
+        if (! $this->customer) {
+            return null;
+        }
+
+        $shipping = method_exists($this->customer, 'shippingAddress')
+            ? $this->customer->shippingAddress()->first()
+            : null;
+
+        return app(\Crater\Services\Documents\DocumentSnapshotter::class)
+            ->snapshotAddress($shipping, \Crater\DataObjects\Documents\AddressSnapshot::TYPE_SHIPPING);
     }
 
     public function getFormattedEstimateDateAttribute($value)

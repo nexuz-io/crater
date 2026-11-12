@@ -358,6 +358,15 @@ Route::prefix('/v1')->group(function () {
 
             Route::post('/estimates/{estimate}/clone', CloneEstimateController::class);
 
+            // Delivery Notes (plan 09 §F11)
+            Route::post('/delivery-notes/{delivery_note}/send/preview', \Crater\Http\Controllers\V1\Admin\DeliveryNote\SendDeliveryNotePreviewController::class);
+            Route::post('/delivery-notes/{delivery_note}/send', \Crater\Http\Controllers\V1\Admin\DeliveryNote\SendDeliveryNoteController::class);
+            Route::post('/delivery-notes/{delivery_note}/mark-delivered', \Crater\Http\Controllers\V1\Admin\DeliveryNote\MarkAsDeliveredController::class);
+            Route::post('/delivery-notes/{delivery_note}/cancel', \Crater\Http\Controllers\V1\Admin\DeliveryNote\CancelDeliveryNoteController::class);
+            Route::post('/delivery-notes/{delivery_note}/convert-to-invoice', \Crater\Http\Controllers\V1\Admin\DeliveryNote\ConvertDeliveryNoteController::class);
+            Route::get('/delivery-notes/templates', \Crater\Http\Controllers\V1\Admin\DeliveryNote\DeliveryNoteTemplatesController::class);
+            Route::apiResource('delivery-notes', \Crater\Http\Controllers\V1\Admin\DeliveryNote\DeliveryNotesController::class);
+
             Route::get('/estimates/templates', EstimateTemplatesController::class);
 
             Route::post('/estimates/delete', [EstimatesController::class, 'delete']);
