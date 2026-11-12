@@ -1,0 +1,70 @@
+import Guid from 'guid'
+import deliveryNoteItemStub from './delivery-note-item'
+import taxStub from './tax'
+
+export default function () {
+  return {
+    id: null,
+    customer: null,
+    template_name: '',
+    tax_per_item: 'NO',
+    sales_tax_type: null,
+    sales_tax_address_type: null,
+    discount_per_item: 'NO',
+    delivery_date: '',
+    delivery_number: '',
+    customer_id: null,
+    sub_total: 0,
+    total: 0,
+    tax: 0,
+    notes: '',
+    terms_and_conditions: '',
+    delivery_address: '',
+    discount_type: 'fixed',
+    discount_val: 0,
+    reference_number: null,
+    discount: 0,
+    status: 'DRAFT',
+    items: [
+      {
+        ...deliveryNoteItemStub,
+        id: Guid.raw(),
+        taxes: [{ ...taxStub, id: Guid.raw() }],
+      },
+    ],
+    taxes: [],
+    customFields: [
+      {
+        'id': 1,
+        'name': 'Field 1',
+        'label': 'Field 1',
+        'placeholder': 'Field 1 placeholder',
+        'type': 'text',
+        'options': [],
+        'required': true,
+        'defaultAnswer': 'Customer Address',
+        'model_type:': 'App\\Customer',
+        'is_active': true,
+        'order': 1,
+        'value': '',
+      },
+      {
+        'id': 2,
+        'name': 'Field 2',
+        'label': 'Field 2',
+        'placeholder': 'Field 2 placeholder',
+        'type': 'text',
+        'options': [],
+        'required': true,
+        'defaultAnswer': '1234 Main Street',
+        'model_type:': 'App\\Customer',
+        'is_active': true,
+        'order': 2,
+        'value': '',
+      },
+    ],
+    fields: [],
+    selectedNote: null,
+    selectedCurrency: '',
+  }
+}

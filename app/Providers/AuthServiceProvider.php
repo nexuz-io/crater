@@ -84,6 +84,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('delete multiple invoices', [InvoicePolicy::class, 'deleteMultiple']);
         Gate::define('delete multiple estimates', [EstimatePolicy::class, 'deleteMultiple']);
         Gate::define('update multiple estimates', [EstimatePolicy::class, 'updateMultiple']);
+        Gate::define('delete multiple delivery notes', [DeliveryNotePolicy::class, 'deleteMultiple']);
         Gate::define('send multiple invoices', [InvoicePolicy::class, 'sendMultiple']);
         Gate::define('delete multiple expenses', [ExpensePolicy::class, 'deleteMultiple']);
         Gate::define('delete multiple payments', [PaymentPolicy::class, 'deleteMultiple']);

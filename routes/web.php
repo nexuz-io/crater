@@ -8,11 +8,13 @@ use Crater\Http\Controllers\V1\Admin\Report\ItemSalesReportController;
 use Crater\Http\Controllers\V1\Admin\Report\ProfitLossReportController;
 use Crater\Http\Controllers\V1\Admin\Report\TaxSummaryReportController;
 use Crater\Http\Controllers\V1\Customer\Auth\LoginController as CustomerLoginController;
+use Crater\Http\Controllers\V1\Customer\DeliveryNotePdfController as CustomerDeliveryNotePdfController;
 use Crater\Http\Controllers\V1\Customer\EstimatePdfController as CustomerEstimatePdfController;
 use Crater\Http\Controllers\V1\Customer\InvoicePdfController as CustomerInvoicePdfController;
 use Crater\Http\Controllers\V1\Customer\PaymentPdfController as CustomerPaymentPdfController;
 use Crater\Http\Controllers\V1\Modules\ScriptController;
 use Crater\Http\Controllers\V1\Modules\StyleController;
+use Crater\Http\Controllers\V1\PDF\DeliveryNotePdfController;
 use Crater\Http\Controllers\V1\PDF\DownloadReceiptController;
 use Crater\Http\Controllers\V1\PDF\EstimatePdfController;
 use Crater\Http\Controllers\V1\PDF\InvoicePdfController;
@@ -94,9 +96,23 @@ Route::middleware('pdf-auth')->group(function () {
     // -------------------------------------------------
     Route::get('/estimates/pdf/{estimate:unique_hash}', EstimatePdfController::class);
 
+    // delivery note pdf (plan 09 PR-11 / plan 05)
+    // -------------------------------------------------
+    Route::get('/delivery-notes/pdf/{delivery_note:unique_hash}', DeliveryNotePdfController::class);
+
     // payment pdf
     // -------------------------------------------------
     Route::get('/payments/pdf/{payment:unique_hash}', PaymentPdfController::class);
+});
+
+
+// customer pdf endpoints for invoice, estimate, delivery-note and Payment
+// -----------------------------------------------------------------
+
+Route::middleware('pdf-auth')->group(function () {
+    Route::get('/delivery-notes/{email_log:token}', [CustomerDeliveryNotePdfController::class, 'getDeliveryNote']);
+    Route::get('/delivery-notes/view/{email_log:token}', [CustomerDeliveryNotePdfController::class, 'getPdf'])
+        ->name('delivery-note');
 });
 
 

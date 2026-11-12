@@ -2,6 +2,7 @@
 
 namespace Crater\Models;
 
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Carbon\Carbon;
 use Crater\Contracts\Documents\Billable;
 use Crater\Contracts\Documents\DocumentContract;
@@ -12,10 +13,14 @@ use Crater\Contracts\Documents\HasTaxes;
 use Crater\Contracts\Documents\Printable;
 use Crater\Contracts\Documents\SerialNumbered;
 use Crater\Services\SerialNumberFormatter;
+use Crater\Traits\GeneratesPdfTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\App;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * Plan 09 §F11 + plan 05 — DeliveryNote model.
@@ -44,9 +49,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * - Deliverable: el `DeliveryNote` ES el deliverable; no necesita
  *   implementar la interfaz conceptual (matriz §3 lo declara así).
  */
-class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasItems, HasTaxes, Printable, Billable, SerialNumbered, HasHistoricalSnapshots
+class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasItems, HasTaxes, Printable, Billable, SerialNumbered, HasHistoricalSnapshots, HasMedia
 {
     use HasFactory;
+    use GeneratesPdfTrait;
+    use InteractsWithMedia;
 
     public const STATUS_DRAFT = 'DRAFT';
 
@@ -299,26 +306,99 @@ class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasIte
     }
 
     // -----------------------------------------------------------------
-    // Printable (plan 09 §F1): shell básico. La generación de PDF
-    // visual se introduce con E10 fuera del scope de F11.
+    // Printable (plan 05 §7 + plan 09 §F11).
+    //
+    // El PDF del albarán NO muestra importes por defecto (plan 05 §1):
+    // sólo cantidades, descripción, unidad y notas libres. El
+    // `DeliveryNotePdfController` y `GenerateDeliveryNotePdfJob`
+    // invocan este getPDFData() a través del trait compartido.
     // -----------------------------------------------------------------
     public function pdfView(): string
     {
-        return 'app.pdf.delivery_note.delivery_note1';
+        return 'app.pdf.delivery-note.delivery-note-1';
     }
 
-    public function getPDFData(): array
+    public function getPDFData(): mixed
     {
-        return [
-            'delivery_note' => $this->toArray(),
-            'customer' => $this->customer?->toArray(),
-            'company' => Company::find($this->company_id)?->toArray(),
+        $company = Company::find($this->company_id);
+        $locale = CompanySetting::getSetting('language', $company?->id);
+        App::setLocale($locale ?: config('app.locale'));
+
+        $logo = $company?->logo_path ?? null;
+
+        $data = [
+            'deliveryNote' => $this,
+            'customer' => $this->customer,
+            'company_address' => $this->getCompanyAddress(),
+            'shipping_address' => $this->getShippingAddress(),
+            'billing_address' => $this->getBillingAddress(),
+            'notes' => $this->notes,
+            'logo' => $logo,
         ];
+
+        if (request()->has('preview')) {
+            return view($this->pdfView(), $data);
+        }
+
+        return PDF::loadView($this->pdfView(), $data);
     }
 
-    public function getGeneratedPDF(string $collectionName): ?array
+    /**
+     * Compatibilidad con `Printable::getGeneratedPDF(string):
+     * ?array`. Devuelve siempre null para forzar la regeneration
+     * por la trait cada vez (el albarán es un documento operativo
+     * y rara vez reutiliza PDF cacheados como Invoice). El trait
+     * trata null/false como "regenerar" y ejecuta `->stream()`.
+     *
+     * Plan 05 §6 + plan 09 §F11: para los PDFs de albaranes
+     * frecuentemente actualizados preferimos evitar caches
+     * stale.
+     */
+    public function getGeneratedPDF(string $collection_name): ?array
     {
         return null;
+    }
+
+    /**
+     * Devuelve la dirección de empresa formateada según
+     * `delivery_note_company_address_format` (config generosa;
+     * algunos clientes siguen usando `invoice_company_address_format`
+     * por compatibilidad con instalaciones existentes).
+     */
+    public function getCompanyAddress()
+    {
+        if ($this->company && (! $this->company->address()->exists())) {
+            return false;
+        }
+
+        $format = CompanySetting::getSetting('delivery_note_company_address_format', $this->company_id)
+            ?: CompanySetting::getSetting('invoice_company_address_format', $this->company_id);
+
+        return $format ? $this->getFormattedString($format) : null;
+    }
+
+    public function getShippingAddress()
+    {
+        if ($this->customer && (! $this->customer->shippingAddress()->exists())) {
+            return false;
+        }
+
+        $format = CompanySetting::getSetting('delivery_note_shipping_address_format', $this->company_id)
+            ?: CompanySetting::getSetting('invoice_shipping_address_format', $this->company_id);
+
+        return $format ? $this->getFormattedString($format) : null;
+    }
+
+    public function getBillingAddress()
+    {
+        if ($this->customer && (! $this->customer->billingAddress()->exists())) {
+            return false;
+        }
+
+        $format = CompanySetting::getSetting('delivery_note_billing_address_format', $this->company_id)
+            ?: CompanySetting::getSetting('invoice_billing_address_format', $this->company_id);
+
+        return $format ? $this->getFormattedString($format) : null;
     }
 
     public function billToInvoice(): Invoice
