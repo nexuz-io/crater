@@ -40,7 +40,7 @@ class CreateDeliveryNotesTable extends Migration
                 $table->bigIncrements('id');
                 $table->unsignedInteger('creator_id')->nullable();
                 $table->unsignedInteger('company_id')->nullable();
-                $table->unsignedInteger('customer_id')->nullable();
+                $table->unsignedBigInteger('customer_id')->nullable();
                 $table->unsignedInteger('currency_id')->nullable();
 
                 $table->string('delivery_number')->nullable();
@@ -49,7 +49,7 @@ class CreateDeliveryNotesTable extends Migration
 
                 $table->date('delivery_date');
                 $table->date('due_date')->nullable();
-                $table->date('delivery_address')->nullable();
+                $table->text('delivery_address')->nullable();
                 $table->text('notes')->nullable();
                 $table->text('terms_and_conditions')->nullable();
 
