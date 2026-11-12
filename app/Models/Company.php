@@ -111,6 +111,16 @@ class Company extends Model implements HasMedia
         return $this->hasMany(Invoice::class);
     }
 
+    /**
+     * Plan 09 §F11 — albaranes emitidos por esta empresa. Permite
+     * la consulta `$company->deliveryNotes()->whereCustomer($id)`
+     * que usa el portal de cliente.
+     */
+    public function deliveryNotes()
+    {
+        return $this->hasMany(DeliveryNote::class);
+    }
+
     public function expenses()
     {
         return $this->hasMany(Expense::class);

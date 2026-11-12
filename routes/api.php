@@ -598,6 +598,11 @@ Route::prefix('/v1')->group(function () {
 
             Route::get('estimates/{id}', [CustomerEstimatesController::class, 'show']);
 
+            // Plan 09 §F11 + plan 05 §8 — albaranes del cliente
+            Route::get('delivery-notes', [\Crater\Http\Controllers\V1\Customer\DeliveryNote\DeliveryNotesController::class, 'index']);
+
+            Route::get('delivery-notes/{id}', [\Crater\Http\Controllers\V1\Customer\DeliveryNote\DeliveryNotesController::class, 'show']);
+
             Route::get('payments', [CustomerPaymentsController::class, 'index']);
 
             Route::get('payments/{id}', [CustomerPaymentsController::class, 'show']);

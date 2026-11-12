@@ -492,6 +492,66 @@ class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasIte
         ];
     }
 
+    // -----------------------------------------------------------------
+    // Query scopes — gemelos de Estimate/Invoice para mantener la
+    // paridad con el portal de cliente y los listados admin.
+    // -----------------------------------------------------------------
+
+    /**
+     * Filtra las albaranes que pertenecen al customer_id del
+     * guardia 'customer'. Usado por el portal en `index`/`show`.
+     */
+    public function scopeWhereCustomer($query, $customer_id)
+    {
+        $query->where('delivery_notes.customer_id', $customer_id);
+    }
+
+    public function scopePaginateData($query, $limit)
+    {
+        if ($limit == 'all') {
+            return $query->get();
+        }
+
+        return $query->paginate($limit);
+    }
+
+    /**
+     * Filtros admin: status, delivery_number, rango de fechas,
+     * client, orden. Mantiene la firma simétrica a
+     * `Estimate::scopeApplyFilters` para homogeneidad.
+     */
+    public function scopeApplyFilters($query, array $filters)
+    {
+        if (! empty($filters['search'])) {
+            $query->where('delivery_number', 'LIKE', '%'.$filters['search'].'%');
+        }
+
+        if (! empty($filters['delivery_number'])) {
+            $query->where('delivery_number', 'LIKE', '%'.$filters['delivery_number'].'%');
+        }
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['from_date']) && ! empty($filters['to_date'])) {
+            $query->whereBetween('delivery_date', [
+                $filters['from_date'],
+                $filters['to_date'],
+            ]);
+        }
+
+        if (! empty($filters['customer_id'])) {
+            $query->where('customer_id', $filters['customer_id']);
+        }
+
+        if (! empty($filters['orderByField']) || ! empty($filters['orderBy'])) {
+            $field = ! empty($filters['orderByField']) ? $filters['orderByField'] : 'created_at';
+            $order = ! empty($filters['orderBy']) ? $filters['orderBy'] : 'desc';
+            $query->orderBy($field, $order);
+        }
+    }
+
     /**
      * Lista las plantillas de PDF disponibles para los albaranes
      * escaneando `resources/views/app/pdf/delivery-note/*.blade.php`.
