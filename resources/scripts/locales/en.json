@@ -1839,6 +1839,8 @@
         "create_delivery_note": "Create Delivery Note",
         "created_message": "Delivery Note created successfully",
         "delivered": "Delivered",
+        "delivery_address_placeholder": "e.g. Warehouse A — Calle Mayor 123, Madrid",
+        "save_delivery_note": "Save Delivery Note",
         "new_delivery_note": "New Delivery Note",
         "something_went_wrong": "Something went wrong. Please try again.",
         "view_invoice": "View Invoice",

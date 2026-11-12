@@ -1852,6 +1852,8 @@
         "billed": "Facturé",
         "new_delivery_note": "Nouveau bon de livraison",
         "view_invoice": "Voir la facture",
+        "delivery_address_placeholder": "ex. Entrepôt A — 12 rue de la livraison, Paris",
+        "save_delivery_note": "Enregistrer le bon de livraison",
         "customer": "Client",
         "something_went_wrong": "Une erreur s'est produite. Veuillez réessayer.",
         "confirm_cancel": "Êtes-vous sûr de vouloir annuler ce bon de livraison ?",

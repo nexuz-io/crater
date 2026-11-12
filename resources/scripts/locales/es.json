@@ -1647,6 +1647,8 @@
         "delivered": "Entregado",
         "cancelled": "Cancelado",
         "billed": "Facturado",
+        "delivery_address_placeholder": "p. ej. Almacén A — Calle Mayor 123, Madrid",
+        "save_delivery_note": "Guardar Albarán",
         "display_prices_on_pdf": "¿Mostrar precios en el PDF del albarán?",
         "display_prices_on_pdf_description": "Por defecto el PDF del albarán omite los precios unitarios (plan 05 §1). Activa esta opción para mostrarlos.",
         "edit_delivery_note": "Editar Albarán",
