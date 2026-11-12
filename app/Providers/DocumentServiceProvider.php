@@ -36,10 +36,13 @@ class DocumentServiceProvider extends ServiceProvider
         // F3 (PR-04) y F4 (PR-05): registry de converters.
         // EstimateToInvoiceConverter (F3) + RecurringToInvoiceConverter
         // (F4) pre-registrados; F11 añadirá DeliveryNoteToInvoiceConverter.
-        $this->app->singleton(DocumentConverterRegistry::class, function () {
+        // F8 — ambos converters reciben ConnectionInterface para su
+        // transacción atómica con lockForUpdate (idempotencia bajo
+        // doble click).
+        $this->app->singleton(DocumentConverterRegistry::class, function ($app) {
             $registry = new DocumentConverterRegistry();
-            $registry->register(new EstimateToInvoiceConverter());
-            $registry->register(new RecurringToInvoiceConverter());
+            $registry->register(new EstimateToInvoiceConverter($app['db.connection']));
+            $registry->register(new RecurringToInvoiceConverter($app['db.connection']));
 
             return $registry;
         });

@@ -50,7 +50,7 @@ beforeEach(function () {
 
 it('DocumentConverterRegistry resuelve recurring-invoice->invoice por clave', function () {
     $registry = new DocumentConverterRegistry();
-    $registry->register(new RecurringToInvoiceConverter());
+    $registry->register(new RecurringToInvoiceConverter(app('db.connection')));
 
     $converter = $registry->get('recurring-invoice', 'invoice');
     expect($converter)->toBeInstanceOf(RecurringToInvoiceConverter::class);
@@ -59,7 +59,7 @@ it('DocumentConverterRegistry resuelve recurring-invoice->invoice por clave', fu
 });
 
 it('RecurringToInvoiceConverter rechaza origen no-RecurringInvoice', function () {
-    $converter = new RecurringToInvoiceConverter();
+    $converter = new RecurringToInvoiceConverter(app('db.connection'));
     expect(fn () => $converter->convert(new \stdClass()))->toThrow(\InvalidArgumentException::class);
 });
 
@@ -270,4 +270,55 @@ it('los taxes del recurring quedan en la invoice', function () {
         'recurring_invoice_id' => null, // Invoice::createTaxes lo desvincula
         'name' => 'F4-Recur-Tax',
     ]);
+});
+
+it('two consecutive convert() calls in same cycle produce one Invoice (F8 idempotence)', function () {
+    // Plan 09 §F8 idempotencia bajo doble click del cron: dentro del
+    // mismo día (mismo ciclo), una segunda invocación devuelve la
+    // misma Invoice sin crear una segunda fila.
+    $user = User::find(1);
+    $company = $user->companies()->first();
+    $currency = Currency::find(1);
+    $customer = Customer::factory()->create([
+        'company_id' => $company->id,
+        'creator_id' => $user->id,
+        'currency_id' => $currency->id,
+    ]);
+
+    \Illuminate\Support\Facades\DB::table('invoice_items')->delete();
+
+    $recurring = RecurringInvoice::factory()->create([
+        'creator_id' => $user->id,
+        'company_id' => $company->id,
+        'customer_id' => $customer->id,
+        'currency_id' => $currency->id,
+        'sub_total' => 100,
+        'tax' => 5,
+        'total' => 105,
+        'discount' => 0,
+        'discount_val' => 0,
+        'discount_type' => 'percentage',
+        'tax_per_item' => 'NO',
+        'discount_per_item' => 'NO',
+        'sales_tax_type' => 'none',
+        'sales_tax_address_type' => 'none',
+        'exchange_rate' => 1,
+        'template_name' => 'invoice1',
+        'status' => RecurringInvoice::ACTIVE,
+        'starts_at' => now()->subDay()->format('Y-m-d H:i:s'),
+        'frequency' => '0 0 1 * *',
+        'limit_by' => RecurringInvoice::NONE,
+        'send_automatically' => false,
+    ]);
+
+    $converter = new RecurringToInvoiceConverter(app('db.connection'));
+    $first = $converter->convert($recurring);
+    $second = $converter->convert($recurring);
+
+    expect((int) $first->id)->toBe((int) $second->id);
+    $today = \Carbon\Carbon::today()->format('Y-m-d');
+    $count = Invoice::where('recurring_invoice_id', $recurring->id)
+        ->whereDate('invoice_date', $today)
+        ->count();
+    expect($count)->toBe(1);
 });

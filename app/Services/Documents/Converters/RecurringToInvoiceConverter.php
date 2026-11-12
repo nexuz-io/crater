@@ -10,6 +10,7 @@ use Crater\Models\Invoice;
 use Crater\Models\RecurringInvoice;
 use Crater\Services\Documents\DocumentConverterInterface;
 use Crater\Services\SerialNumberFormatter;
+use Illuminate\Database\ConnectionInterface;
 use Vinkla\Hashids\Facades\Hashids;
 
 /**
@@ -35,6 +36,10 @@ use Vinkla\Hashids\Facades\Hashids;
  */
 final class RecurringToInvoiceConverter implements DocumentConverterInterface
 {
+    public function __construct(private ConnectionInterface $db)
+    {
+    }
+
     public function sourceType(): string
     {
         return 'recurring-invoice';
@@ -53,14 +58,33 @@ final class RecurringToInvoiceConverter implements DocumentConverterInterface
             );
         }
 
-        $recurring = $origin;
-        $recurring->load('items.taxes');
+        return $this->db->transaction(function () use ($origin) {
+            // Plan 09 §F8: lockForUpdate sobre la RecurringInvoice para
+            // serializar dos invocaciones concurrentes (e.g. cron doble).
+            $recurring = RecurringInvoice::where('id', $origin->id)->lockForUpdate()->first();
+            if (! $recurring) {
+                throw new \RuntimeException('RecurringInvoice vanished during conversion');
+            }
 
-        $serial = (new SerialNumberFormatter())
-            ->setModel(new Invoice())
-            ->setCompany($recurring->company_id)
-            ->setCustomer($recurring->customer_id)
-            ->setNextNumbers();
+            // Plan 09 §F8 — chequeo de unicidad dentro del ciclo: si
+            // ya hay una Invoice con recurring_invoice_id = este id y
+            // invoice_date = hoy, la devolvemos. Distintos días del
+            // cron producen nuevas Invoices sin colisión.
+            $today = Carbon::today()->format('Y-m-d');
+            $existing = Invoice::where('recurring_invoice_id', $recurring->id)
+                ->whereDate('invoice_date', $today)
+                ->first();
+            if ($existing) {
+                return $existing;
+            }
+
+            $recurring->load('items.taxes');
+
+            $serial = (new SerialNumberFormatter())
+                ->setModel(new Invoice())
+                ->setCompany($recurring->company_id)
+                ->setCustomer($recurring->customer_id)
+                ->setNextNumbers();
 
         $days = CompanySetting::getSetting('invoice_due_date_days', $recurring->company_id);
         if (! $days || $days == 'null') {
@@ -139,5 +163,6 @@ final class RecurringToInvoiceConverter implements DocumentConverterInterface
         }
 
         return $invoice;
+        });
     }
 }
