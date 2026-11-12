@@ -1,30 +1,34 @@
 <?php
 
+use Crater\Models\Company;
+use Crater\Models\CompanySetting;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Plan 05 §7 + plan 09 §F11 — rellena los settings de "Nota de
  * entrega" para cada company existente al momento del upgrade.
  *
  * Es un mirror idempotente del bloque que `Company::setupDefaultSettings()`
- * aplica a companies nuevas. Usamos `WHERE NOT EXISTS` parcial
- * sobre `company_settings` para no pisar preferencias que el
- * operador ya haya cambiado:
- *   - Si la fila existe: respetamos el valor actual.
- *   - Si no existe:    insertamos el default.
+ * aplica a companies nuevas. Idempotencia:
+ *   - Si la fila (company_id, option) NO existe: la creamos con
+ *     el default de plan 05/09 §F11.
+ *   - Si la fila YA existe (operador cambió el setting): la
+ *     respetamos. NO pisamos valores personalizados.
  *
- * No tocamos filas ajenas a delivery-notes (la query sólo mira
- * `option LIKE 'delivery\_note%'` y `notify_delivery_note_viewed`).
+ * Implementación: usamos `CompanySetting::firstOrCreate()` del
+ * modelo Eloquent (no del query builder — DB::table()->firstOrCreate
+ * no existe). La query del modelo sí soporta este método de forma
+ * nativa, sin requerir índice unique (la unicidad la garantiza la
+ * propia combinación company_id+option por convención de la app).
  *
  * Lista de settings cubiertos:
  *   - delivery_note_auto_generate           ('YES')
  *   - delivery_note_number_format           ('{{SERIES:DN}}{{DELIMITER:-}}{{SEQUENCE:6}}')
  *   - delivery_note_default_terms_and_conditions  ('')
- *   - delivery_note_company_address_format  (idéntico a invoice/_estimate)
+ *   - delivery_note_company_address_format  (idéntico a invoice/estimate)
  *   - delivery_note_shipping_address_format (idéntico a invoice/estimate)
  *   - delivery_note_billing_address_format  (idéntico a invoice/estimate)
- *   - delivery_note_mail_body               (texto base con placeholder {COMPANY_NAME})
+ *   - delivery_note_mail_body               (texto base con {COMPANY_NAME})
  *   - delivery_note_email_attachment        ('NO')
  *   - delivery_note_display_prices          ('NO' — plan 05 §1)
  *   - notify_delivery_note_viewed           ('NO')
@@ -33,16 +37,6 @@ class AddDeliveryNoteSettingsToExistingCompanies extends Migration
 {
     public function up()
     {
-        // `company_settings` no tiene unique index sobre
-        // (company_id, option), así que `insertOrIgnore` no es
-        // seguro. Usamos firstOrCreate por combinación: si el row
-        // no existe, lo crea con el default; si el operador ya
-        // tocó el setting, respetamos su valor. Race-safe porque
-        // Eloquent serializa el SELECT+INSERT en una sola tx
-        // y porque este script corre una sola vez durante el migrate.
-
-        $companies = DB::table('companies')->select('id')->get();
-
         $defaults = [
             'delivery_note_auto_generate' => 'YES',
             'delivery_note_number_format' => '{{SERIES:DN}}{{DELIMITER:-}}{{SEQUENCE:6}}',
@@ -56,22 +50,21 @@ class AddDeliveryNoteSettingsToExistingCompanies extends Migration
             'notify_delivery_note_viewed' => 'NO',
         ];
 
-        $now = now();
-        foreach ($companies as $company) {
+        Company::all()->each(function ($company) use ($defaults) {
             foreach ($defaults as $option => $value) {
-                DB::table('company_settings')->firstOrCreate(
+                // Model Eloquent — firstOrCreate SÍ existe sólo en
+                // el model layer (no en DB::table()). Si la fila
+                // existe, NO toca su valor (preserva overrides
+                // manuales del operador).
+                CompanySetting::firstOrCreate(
                     [
                         'company_id' => $company->id,
                         'option' => $option,
                     ],
-                    [
-                        'value' => $value,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ]
+                    ['value' => $value]
                 );
             }
-        }
+        });
     }
 
     public function down()
