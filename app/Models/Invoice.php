@@ -332,126 +332,12 @@ class Invoice extends Model implements HasMedia
 
     public static function createInvoice($request)
     {
-        $data = $request->getInvoicePayload();
-
-        if ($request->has('invoiceSend')) {
-            $data['status'] = Invoice::STATUS_SENT;
-        }
-
-        $invoice = Invoice::create($data);
-
-        $serial = (new SerialNumberFormatter())
-            ->setModel($invoice)
-            ->setCompany($invoice->company_id)
-            ->setCustomer($invoice->customer_id)
-            ->setNextNumbers();
-
-        $invoice->sequence_number = $serial->nextSequenceNumber;
-        $invoice->customer_sequence_number = $serial->nextCustomerSequenceNumber;
-        $invoice->unique_hash = Hashids::connection(Invoice::class)->encode($invoice->id);
-        $invoice->save();
-
-        self::createItems($invoice, $request->items);
-
-        $company_currency = CompanySetting::getSetting('currency', $request->header('company'));
-
-        if ((string)$data['currency_id'] !== $company_currency) {
-            ExchangeRateLog::addExchangeRateLog($invoice);
-        }
-
-        if ($request->has('taxes') && (! empty($request->taxes))) {
-            self::createTaxes($invoice, $request->taxes);
-        }
-
-        if ($request->customFields) {
-            $invoice->addCustomFields($request->customFields);
-        }
-
-        $invoice = Invoice::with([
-            'items',
-            'items.fields',
-            'items.fields.customField',
-            'customer',
-            'taxes'
-        ])
-            ->find($invoice->id);
-
-        return $invoice;
+        return app(\Crater\Services\Documents\DocumentWriter::class)->createInvoice($request);
     }
 
     public function updateInvoice($request)
     {
-        $serial = (new SerialNumberFormatter())
-            ->setModel($this)
-            ->setCompany($this->company_id)
-            ->setCustomer($request->customer_id)
-            ->setModelObject($this->id)
-            ->setNextNumbers();
-
-        $data = $request->getInvoicePayload();
-        $oldTotal = $this->total;
-
-        $total_paid_amount = $this->total - $this->due_amount;
-
-        if ($total_paid_amount > 0 && $this->customer_id !== $request->customer_id) {
-            return 'customer_cannot_be_changed_after_payment_is_added';
-        }
-
-        if ($request->total < $total_paid_amount) {
-            return 'total_invoice_amount_must_be_more_than_paid_amount';
-        }
-
-        if ($oldTotal != $request->total) {
-            $oldTotal = (int) round($request->total) - (int) $oldTotal;
-        } else {
-            $oldTotal = 0;
-        }
-
-        $data['due_amount'] = ($this->due_amount + $oldTotal);
-        $data['base_due_amount'] = $data['due_amount'] * $data['exchange_rate'];
-        $data['customer_sequence_number'] = $serial->nextCustomerSequenceNumber;
-
-        $this->changeInvoiceStatus($data['due_amount']);
-
-        $this->update($data);
-
-        $company_currency = CompanySetting::getSetting('currency', $request->header('company'));
-
-        if ((string)$data['currency_id'] !== $company_currency) {
-            ExchangeRateLog::addExchangeRateLog($this);
-        }
-
-        $this->items->map(function ($item) {
-            $fields = $item->fields()->get();
-
-            $fields->map(function ($field) {
-                $field->delete();
-            });
-        });
-
-        $this->items()->delete();
-        $this->taxes()->delete();
-
-        self::createItems($this, $request->items);
-
-        if ($request->has('taxes') && (! empty($request->taxes))) {
-            self::createTaxes($this, $request->taxes);
-        }
-
-        if ($request->customFields) {
-            $this->updateCustomFields($request->customFields);
-        }
-
-        $invoice = Invoice::with([
-            'items',
-            'items.fields',
-            'items.fields.customField',
-            'customer',
-            'taxes'
-        ])
-            ->find($this->id);
-
-        return $invoice;
+        return app(\Crater\Services\Documents\DocumentWriter::class)->updateInvoice($this, $request);
     }
 
     public function sendInvoiceData($data)
