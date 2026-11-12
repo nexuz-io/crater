@@ -115,6 +115,16 @@ class Invoice extends Model implements HasMedia
         return $this->belongsTo(RecurringInvoice::class);
     }
 
+    /**
+     * Plan 09 §F11 / plan 05 §3 — albarán origen de esta Invoice
+     * (FK UNIQUE `invoices.delivery_note_id`). La inversa se
+     * materializa también vía `DeliveryNote::invoice()`.
+     */
+    public function deliveryNote()
+    {
+        return $this->belongsTo(DeliveryNote::class, 'delivery_note_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'creator_id');

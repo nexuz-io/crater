@@ -365,6 +365,7 @@ Route::prefix('/v1')->group(function () {
             Route::post('/delivery-notes/{delivery_note}/cancel', \Crater\Http\Controllers\V1\Admin\DeliveryNote\CancelDeliveryNoteController::class);
             Route::post('/delivery-notes/{delivery_note}/convert-to-invoice', \Crater\Http\Controllers\V1\Admin\DeliveryNote\ConvertDeliveryNoteController::class);
             Route::get('/delivery-notes/templates', \Crater\Http\Controllers\V1\Admin\DeliveryNote\DeliveryNoteTemplatesController::class);
+            Route::post('/delivery-notes/delete', [\Crater\Http\Controllers\V1\Admin\DeliveryNote\DeliveryNotesController::class, 'delete']);
             Route::apiResource('delivery-notes', \Crater\Http\Controllers\V1\Admin\DeliveryNote\DeliveryNotesController::class);
 
             Route::get('/estimates/templates', EstimateTemplatesController::class);

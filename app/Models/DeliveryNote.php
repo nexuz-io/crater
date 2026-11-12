@@ -19,8 +19,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Vinkla\Hashids\Facades\Hashids;
 
 /**
  * Plan 09 §F11 + plan 05 — DeliveryNote model.
@@ -334,6 +337,15 @@ class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasIte
             'billing_address' => $this->getBillingAddress(),
             'notes' => $this->notes,
             'logo' => $logo,
+            'delivery_address' => $this->delivery_address,
+            // Plan 05 §1: por defecto NO mostramos precios. Honra el
+            // override de empresa `delivery_note_display_prices` =
+            // 'YES'|'NO' (mismo nombre que ya define la i18n
+            // `display_prices_on_pdf`).
+            'show_prices' => CompanySetting::getSetting(
+                'delivery_note_display_prices',
+                $this->company_id
+            ) === 'YES',
         ];
 
         if (request()->has('preview')) {
@@ -416,5 +428,116 @@ class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasIte
         return app(\Crater\Services\Documents\DocumentConverterRegistry::class)
             ->get('delivery-note', 'invoice')
             ->convert($this);
+    }
+
+    // -----------------------------------------------------------------
+    // Mail/PDF — gemelo de Estimate (`sendEstimateData` / `send`).
+    // Plan 05 §6 + plan 09 PR-11.
+    //
+    // El albarán no se marca como "SENT" automáticamente al enviar
+    // por correo: puede enviarse tanto en DRAFT (borrador al cliente
+    // para firma) como en DELIVERED (confirmación post-entrega).
+    // La transición DRAFT→DELIVERED queda en `markAsDelivered()` para
+    // que sea independiente del envío.
+    // -----------------------------------------------------------------
+    public function sendDeliveryNoteData($data)
+    {
+        $data['delivery_note'] = $this->toArray();
+        $data['user'] = $this->customer->toArray();
+        $data['company'] = $this->company->toArray();
+        $data['body'] = $this->getEmailBody($data['body']);
+        $data['attach']['data'] = ($this->getEmailAttachmentSetting()) ? $this->getPDFData() : null;
+
+        return $data;
+    }
+
+    public function send($data)
+    {
+        $data = $this->sendDeliveryNoteData($data);
+
+        \Mail::to($data['to'])->send(new \Crater\Mail\SendDeliveryNoteMail($data));
+
+        return [
+            'success' => true,
+            'type' => 'send',
+        ];
+    }
+
+    public function getEmailAttachmentSetting(): bool
+    {
+        $setting = \Crater\Models\CompanySetting::getSetting('delivery_note_email_attachment', $this->company_id);
+
+        if ($setting === 'NO') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getEmailBody(string $body): string
+    {
+        $values = array_merge($this->getFieldsArray(), $this->getExtraFields());
+
+        $body = strtr($body, $values);
+
+        return preg_replace('/{(.*?)}/', '', $body);
+    }
+
+    public function getExtraFields(): array
+    {
+        return [
+            '{DELIVERY_DATE}' => $this->formattedDeliveryDate ?? '',
+            '{DELIVERY_NUMBER}' => $this->delivery_number ?? '',
+            '{DELIVERY_REF_NUMBER}' => $this->reference_number ?? '',
+        ];
+    }
+
+    /**
+     * Lista las plantillas de PDF disponibles para los albaranes
+     * escaneando `resources/views/app/pdf/delivery-note/*.blade.php`.
+     * Gemelo de `Estimate::estimateTemplates()`.
+     */
+    public static function deliveryNoteTemplates(): array
+    {
+        $templates = Storage::disk('views')->files('/app/pdf/delivery-note');
+
+        $deliveryNoteTemplates = [];
+
+        foreach ($templates as $key => $template) {
+            $templateName = Str::before(basename($template), '.blade.php');
+            $deliveryNoteTemplates[$key]['name'] = $templateName;
+            $deliveryNoteTemplates[$key]['path'] = asset('/img/PDF/'.$templateName.'.png');
+        }
+
+        return $deliveryNoteTemplates;
+    }
+
+    /**
+     * Bulk delete — gemelo de Invoice::deleteInvoices. Antes de borrar
+     * limpia las filas de taxes polimórficas vinculadas al albarán
+     * para evitar huérfanas (FK está con `onDelete('set null')`, pero
+     * al cancelarlas la Invoice convertida conservará totales
+     * involucrados).
+     */
+    public static function deleteDeliveryNotes(array $ids): bool
+    {
+        foreach ($ids as $id) {
+            $deliveryNote = self::find($id);
+
+            if (! $deliveryNote) {
+                continue;
+            }
+
+            if ($deliveryNote->alreadyBilled()) {
+                // El plan 05 §3 lo veta: no se permite el borrado físico
+                // porque la Invoice mantiene `delivery_note_id` y perdería
+                // la trazabilidad. Anular es la salida correcta.
+                continue;
+            }
+
+            $deliveryNote->delete();
+        }
+
+        return true;
     }
 }

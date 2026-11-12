@@ -3,8 +3,10 @@
 namespace Crater\Http\Controllers\V1\Admin\DeliveryNote;
 
 use Crater\Http\Controllers\Controller;
+use Crater\Http\Requests\DeleteDeliveryNotesRequest;
 use Crater\Http\Requests\DeliveryNoteRequest;
 use Crater\Http\Resources\DeliveryNoteResource;
+use Crater\Jobs\GenerateDeliveryNotePdfJob;
 use Crater\Models\DeliveryNote;
 use Illuminate\Http\Request;
 
@@ -14,6 +16,11 @@ use Illuminate\Http\Request;
  * El alcance de F11 incluye un endpoint POST para crear + actualizar
  * albaranes con validacion. La transformacion a Invoice se delega
  * al `ConvertDeliveryNoteController` que usa el converter de F11.
+ *
+ * F11a — añade:
+ *  - Despacho de `GenerateDeliveryNotePdfJob` tras `store`/`update`
+ *    para mantener el PDF cacheado coherente.
+ *  - `delete(DeleteDeliveryNotesRequest)` para borrado bulk.
  */
 class DeliveryNotesController extends Controller
 {
@@ -63,6 +70,9 @@ class DeliveryNotesController extends Controller
             }
         }
 
+        // Despacha la generación del PDF tras commit.
+        GenerateDeliveryNotePdfJob::dispatch($deliveryNote);
+
         return new DeliveryNoteResource(
             $deliveryNote->load('items', 'taxes')
         );
@@ -74,6 +84,9 @@ class DeliveryNotesController extends Controller
 
         $delivery_note->update($request->validated());
 
+        // Regenera el PDF (sobrescribe cache anterior).
+        GenerateDeliveryNotePdfJob::dispatch($delivery_note, true);
+
         return new DeliveryNoteResource(
             $delivery_note->fresh()->load('items', 'taxes')
         );
@@ -82,8 +95,33 @@ class DeliveryNotesController extends Controller
     public function destroy(Request $request, DeliveryNote $delivery_note)
     {
         $this->authorize('delete', $delivery_note);
+
+        // Plan 05 §3: albarán ya facturado NO se borra físicamente.
+        if ($delivery_note->alreadyBilled()) {
+            return response()->json([
+                'error' => 'cannot_delete_billed',
+                'message' => __('delivery-notes.cannot_delete_billed'),
+            ], 422);
+        }
+
         $delivery_note->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Bulk delete — gemelo de EstimatesController::delete.
+     * Sólo aplica `delete()` a albaranes no facturados (los ya
+     * facturados quedan intactos por trazabilidad contable).
+     */
+    public function delete(DeleteDeliveryNotesRequest $request)
+    {
+        $this->authorize('deleteMultiple', DeliveryNote::class);
+
+        DeliveryNote::deleteDeliveryNotes($request->ids);
+
+        return response()->json([
+            'success' => true,
+        ]);
     }
 }
