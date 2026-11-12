@@ -3,6 +3,7 @@
         "calculator": "Calculator",
         "dashboard": "Dashboard",
         "customers": "Customers",
+        "delivery-notes": "Delivery Notes",
         "items": "Products",
         "invoices": "Invoices",
         "recurring-invoices": "Recurring Invoices",

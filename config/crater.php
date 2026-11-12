@@ -2,6 +2,7 @@
 
 use Crater\Models\Customer;
 use Crater\Models\CustomField;
+use Crater\Models\DeliveryNote;
 use Crater\Models\Estimate;
 use Crater\Models\ExchangeRateProvider;
 use Crater\Models\Expense;
@@ -303,6 +304,7 @@ return [
         ['key' => 'estimates', 'menu' => 'Estimates'],
         ['key' => 'invoices', 'menu' => 'Invoices'],
         ['key' => 'recurring_invoices', 'menu' => 'Recurring Invoices'],
+        ['key' => 'delivery_notes', 'menu' => 'Delivery Notes'],
         ['key' => 'payments', 'menu' => 'Payments'],
         ['key' => 'expenses', 'menu' => 'Expenses'],
         ['key' => 'modules', 'menu' => 'Modules'],
@@ -361,6 +363,16 @@ return [
             'owner_only' => false,
             'ability' => 'view-estimate',
             'model' => Estimate::class
+        ],
+        [
+            'title' => 'navigation.delivery-notes',
+            'group' => 2,
+            'link' => '/admin/delivery-notes',
+            'icon' => 'TruckIcon',
+            'name' => 'DeliveryNotes',
+            'owner_only' => false,
+            'ability' => 'view-delivery-note',
+            'model' => DeliveryNote::class
         ],
         [
             'title' => 'navigation.invoices',
@@ -477,6 +489,16 @@ return [
             'ability' => '',
             'group' => '',
             'model' => ''
+        ],
+        [
+            'title' => 'DeliveryNotes',
+            'link' => '/customer/delivery-notes',
+            'icon' => '',
+            'name' => 'DeliveryNotes',
+            'ability' => 'view-delivery-note',
+            'owner_only' => false,
+            'group' => '',
+            'model' => DeliveryNote::class
         ],
         [
             'title' => 'Payments',

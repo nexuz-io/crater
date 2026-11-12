@@ -8,6 +8,10 @@ const Invoice = () => import('@/scripts/customer/views/invoices/Index.vue')
 const InvoiceView = () => import('@/scripts/customer/views/invoices/View.vue')
 const Estimate = () => import('@/scripts/customer/views/estimates/Index.vue')
 const EstimateView = () => import('@/scripts/customer/views/estimates/View.vue')
+const DeliveryNote = () =>
+  import('@/scripts/customer/views/delivery-notes/Index.vue')
+const DeliveryNoteView = () =>
+  import('@/scripts/customer/views/delivery-notes/View.vue')
 const Payment = () => import('@/scripts/customer/views/payments/Index.vue')
 const PaymentView = () => import('@/scripts/customer/views/payments/View.vue')
 const SettingIndex = () => import('@/scripts/customer/views/settings/SettingsIndex.vue')
@@ -70,6 +74,16 @@ export default [
         path: 'estimates/:id/view',
         component: EstimateView,
         name: 'customer.estimates.view',
+      },
+      {
+        path: 'delivery-notes',
+        component: DeliveryNote,
+        name: 'customer.delivery-notes.dashboard',
+      },
+      {
+        path: 'delivery-notes/:id/view',
+        component: DeliveryNoteView,
+        name: 'customer.delivery-notes.view',
       },
       {
         path: 'payments',
