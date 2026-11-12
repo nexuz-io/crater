@@ -428,6 +428,7 @@ import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { useEstimateStore } from '@/scripts/admin/stores/estimate'
 import { useInvoiceStore } from '@/scripts/admin/stores/invoice'
 import { useRecurringInvoiceStore } from '@/scripts/admin/stores/recurring-invoice'
+import { useDeliveryNoteStore } from '@/scripts/admin/stores/delivery-note'
 import { useModalStore } from '@/scripts/stores/modal'
 import { useGlobalStore } from '@/scripts/admin/stores/global'
 import { useCustomerStore } from '@/scripts/admin/stores/customer'
@@ -466,6 +467,7 @@ const globalStore = useGlobalStore()
 const invoiceStore = useInvoiceStore()
 const recurringInvoiceStore = useRecurringInvoiceStore()
 const calculatorStore = useCalculatorStore()
+const deliveryNoteStore = useDeliveryNoteStore()
 const userStore = useUserStore()
 const routes = useRoute()
 const { t } = useI18n()
@@ -482,6 +484,8 @@ const selectedCustomer = computed(() => {
       return recurringInvoiceStore.newRecurringInvoice.customer
     case 'calculator':
       return calculatorStore.currentCalculator.customer
+    case 'delivery-note':
+      return deliveryNoteStore.newDeliveryNote.customer
     default:
       return ''
   }
@@ -494,6 +498,8 @@ function resetSelectedCustomer() {
     invoiceStore.resetSelectedCustomer()
   } else if (props.type === 'calculator') {
     calculatorStore.resetSelectedCustomer()
+  } else if (props.type === 'delivery-note') {
+    deliveryNoteStore.resetSelectedCustomer()
   } else {
     recurringInvoiceStore.resetSelectedCustomer()
   }
@@ -505,6 +511,8 @@ if (props.customerId && props.type === 'estimate') {
   invoiceStore.selectCustomer(props.customerId)
 } else if (props.customerId && props.type === 'calculator') {
   calculatorStore.selectCustomer(props.customerId)
+} else if (props.customerId && props.type === 'delivery-note') {
+  deliveryNoteStore.selectCustomer(props.customerId)
 } else {
   if (props.customerId) recurringInvoiceStore.selectCustomer(props.customerId)
 }
@@ -572,6 +580,9 @@ function selectNewCustomer(id, close) {
     invoiceStore.selectCustomer(id)
   } else if (props.type === 'calculator') {
     calculatorStore.selectCustomer(id)
+  } else if (props.type === 'delivery-note') {
+    deliveryNoteStore.getNextNumber(params, true)
+    deliveryNoteStore.selectCustomer(id)
   } else {
     recurringInvoiceStore.selectCustomer(id)
   }

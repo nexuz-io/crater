@@ -74,6 +74,12 @@ test('plan 05: rutas web del PDF publico resuelven al controller esperado', func
     });
 
     expect($publicPdfRoute)->not->toBeNull();
+    // The web route uses `unique_hash` for route-model binding; the
+    // raw URI template matches both `{delivery_note}` and
+    // `{delivery_note:unique_hash}`. Either is acceptable.
+    $publicPdfUri = $publicPdfRoute->uri;
+    expect($publicPdfUri)
+        ->toMatch('/^delivery-notes\/pdf\/\{delivery_note(?::unique_hash)?\}$/');
     expect($publicPdfRoute->getAction()['controller'])
         ->toBe(AppDeliveryNotePdfController::class);
 

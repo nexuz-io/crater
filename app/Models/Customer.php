@@ -73,6 +73,16 @@ class Customer extends Authenticatable implements HasMedia
         return $this->hasMany(Invoice::class);
     }
 
+    /**
+     * Plan 09 §F11 — albaranes emitidos a este cliente. Permite
+     * que el portal muestre la lista y para `Customer::delete()`
+     * limpie los albaranes del cliente cuando se elimina la ficha.
+     */
+    public function deliveryNotes()
+    {
+        return $this->hasMany(DeliveryNote::class);
+    }
+
     public function payments()
     {
         return $this->hasMany(Payment::class);
@@ -136,6 +146,12 @@ class Customer extends Authenticatable implements HasMedia
 
             if ($customer->estimates()->exists()) {
                 $customer->estimates()->delete();
+            }
+
+            // Plan 09 §F11 — albaranes del cliente también se purgan
+            // en la cascada de borrado (coherente con Estimates/Invoices).
+            if ($customer->deliveryNotes()->exists()) {
+                $customer->deliveryNotes()->delete();
             }
 
             if ($customer->invoices()->exists()) {

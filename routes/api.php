@@ -365,6 +365,7 @@ Route::prefix('/v1')->group(function () {
             Route::post('/delivery-notes/{delivery_note}/cancel', \Crater\Http\Controllers\V1\Admin\DeliveryNote\CancelDeliveryNoteController::class);
             Route::post('/delivery-notes/{delivery_note}/convert-to-invoice', \Crater\Http\Controllers\V1\Admin\DeliveryNote\ConvertDeliveryNoteController::class);
             Route::get('/delivery-notes/templates', \Crater\Http\Controllers\V1\Admin\DeliveryNote\DeliveryNoteTemplatesController::class);
+            Route::post('/delivery-notes/delete', [\Crater\Http\Controllers\V1\Admin\DeliveryNote\DeliveryNotesController::class, 'delete']);
             Route::apiResource('delivery-notes', \Crater\Http\Controllers\V1\Admin\DeliveryNote\DeliveryNotesController::class);
 
             Route::get('/estimates/templates', EstimateTemplatesController::class);
@@ -596,6 +597,11 @@ Route::prefix('/v1')->group(function () {
             Route::get('estimates', [ CustomerEstimatesController::class, 'index']);
 
             Route::get('estimates/{id}', [CustomerEstimatesController::class, 'show']);
+
+            // Plan 09 §F11 + plan 05 §8 — albaranes del cliente
+            Route::get('delivery-notes', [\Crater\Http\Controllers\V1\Customer\DeliveryNote\DeliveryNotesController::class, 'index']);
+
+            Route::get('delivery-notes/{id}', [\Crater\Http\Controllers\V1\Customer\DeliveryNote\DeliveryNotesController::class, 'show']);
 
             Route::get('payments', [CustomerPaymentsController::class, 'index']);
 

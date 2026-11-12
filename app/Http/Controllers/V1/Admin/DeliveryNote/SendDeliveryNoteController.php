@@ -3,20 +3,32 @@
 namespace Crater\Http\Controllers\V1\Admin\DeliveryNote;
 
 use Crater\Http\Controllers\Controller;
-use Crater\Models\CompanySetting;
+use Crater\Http\Requests\SendDeliveryNoteRequest;
+use Crater\Jobs\GenerateDeliveryNotePdfJob;
 use Crater\Models\DeliveryNote;
-use Crater\Models\User;
-use Illuminate\Http\Request;
 
+/**
+ * Plan 05 §6 + plan 09 PR-11 — envío real del DeliveryNote por email.
+ *
+ * Gemelo de `SendEstimateController`:
+ *  - Valida con `SendDeliveryNoteRequest` (subject/body/from/to).
+ *  - Delega a `DeliveryNote::send()` que crea EmailLog + SendDeliveryNoteMail.
+ *  - No fuerza la transición a DELIVERED (puede enviarse desde DRAFT
+ *    o DELIVERED; la transición es independiente, vía
+ *    `MarkAsDeliveredController`).
+ *  - Despacha `GenerateDeliveryNotePdfJob` para refrescar la cache
+ *    del PDF tras la posible mutación del estado.
+ */
 class SendDeliveryNoteController extends Controller
 {
-    public function __invoke(Request $request, DeliveryNote $delivery_note, User $user)
+    public function __invoke(SendDeliveryNoteRequest $request, DeliveryNote $delivery_note)
     {
         $this->authorize('send', $delivery_note);
 
-        $data = $request->all();
-        $body = CompanySetting::getSetting('delivery_note_mail_body', $delivery_note->company_id);
+        $response = $delivery_note->send($request->all());
 
-        return $delivery_note; // shell — fuera del scope de F11
+        GenerateDeliveryNotePdfJob::dispatch($delivery_note, true);
+
+        return response()->json($response);
     }
 }

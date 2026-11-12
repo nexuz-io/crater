@@ -40,6 +40,9 @@ class InvoiceResource extends JsonResource
             'customer_id' => $this->customer_id,
             'recurring_invoice_id' => $this->recurring_invoice_id,
             'from_estimate_id' => $this->from_estimate_id,
+            // Plan 05 §3 / plan 09 §F11 — FK al DeliveryNote origen
+            // cuando esta Invoice nace de la conversión.
+            'delivery_note_id' => $this->delivery_note_id,
             'sequence_number' => $this->sequence_number,
             'exchange_rate' => $this->exchange_rate,
             'base_discount_val' => $this->base_discount_val,
