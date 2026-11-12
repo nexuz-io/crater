@@ -6,6 +6,7 @@ use Crater\Http\Controllers\Controller;
 use Crater\Http\Requests\BrandRequest;
 use Crater\Http\Resources\BrandResource;
 use Crater\Models\Brand;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 
 class BrandsController extends Controller
@@ -47,9 +48,23 @@ class BrandsController extends Controller
             (int) $request->header('company')
         );
 
-        $brand = Brand::create($payload);
+        try {
+            $brand = Brand::create($payload);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // La Rule::unique del BrandRequest no captura esta
+            // colision en todos los motores SQLite; caemos a 422
+            // cuando la FK constraint dispara al INSERT.
+            return response()->json([
+                'error' => 'brand_name_unique',
+                'message' => 'A brand with this name already exists in this company.',
+            ], 422);
+        }
 
-        return new BrandResource($brand);
+        // Plan 09 hotfix: POST devuelve 200 OK en lugar del 201
+        // por defecto de Laravel cuando un Resource se persiste.
+        // La convencion del proyecto usa 200 para create/update/delete
+        // exitos y devuelve `success: true`.
+        return (new BrandResource($brand))->response()->setStatusCode(200);
     }
 
     /**
@@ -79,7 +94,8 @@ class BrandsController extends Controller
         $brand->name_normalized = Brand::normalizeName($payload['name']);
         $brand->save();
 
-        return new BrandResource($brand);
+        // Plan 09 hotfix: PUT devuelve 200 OK explícito.
+        return (new BrandResource($brand))->response()->setStatusCode(200);
     }
 
     /**
@@ -87,13 +103,15 @@ class BrandsController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(BrandRequest $request, Brand $brand)
+    public function destroy(Request $request, Brand $brand)
     {
         $this->authorize('delete', $brand);
 
         // Reject deletion when items still reference the brand —
         // including inactive ones, since the operator can revive them
-        // from the trash-like toggle in the UI.
+        // from the trash-like toggle in the UI. BrandRequest is NOT
+        // injected here because DELETE has no body to validate and the
+        // brand payload required by the create flow does not apply.
         if ($brand->items()->exists()) {
             return respondJson('brand_attached_items', 'This brand is used by one or more services and cannot be deleted.');
         }

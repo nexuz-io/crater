@@ -8,6 +8,7 @@ use Crater\Http\Resources\ItemFamilyResource;
 use Crater\Models\ItemFamily;
 use Crater\Services\ItemFamilyService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ItemFamiliesController extends Controller
 {
@@ -43,12 +44,23 @@ class ItemFamiliesController extends Controller
     {
         $this->authorize('create', ItemFamily::class);
 
-        $family = $service->create(
-            $request->getFamilyPayload(),
-            (int) $request->header('company')
-        );
+        try {
+            $family = $service->create(
+                $request->getFamilyPayload(),
+                (int) $request->header('company')
+            );
+        } catch (ValidationException $e) {
+            // Plan 09 hotfix: el servicio lanza ValidationException
+            // cuando detecta sibling-unique / cycle / cross-company.
+            // Lo traducimos al contrato 422 del response del cliente.
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
-        return new ItemFamilyResource($family);
+        // Plan 09 hotfix: POST devuelve 200 OK en lugar del 201 default.
+        return (new ItemFamilyResource($family))->response()->setStatusCode(200);
     }
 
     /**
@@ -75,9 +87,16 @@ class ItemFamiliesController extends Controller
     ) {
         $this->authorize('update', $itemFamily);
 
-        $family = $service->update($itemFamily, $request->getFamilyPayload());
+        try {
+            $family = $service->update($itemFamily, $request->getFamilyPayload());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
-        return new ItemFamilyResource($family);
+        return (new ItemFamilyResource($family))->response()->setStatusCode(200);
     }
 
     /**
@@ -89,7 +108,14 @@ class ItemFamiliesController extends Controller
     {
         $this->authorize('delete', $itemFamily);
 
-        $service->delete($itemFamily);
+        try {
+            $service->delete($itemFamily);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         return response()->json([
             'success' => true,
