@@ -11,6 +11,7 @@ use Crater\Models\Currency;
 use Crater\Models\Module;
 use Crater\Models\Setting;
 use Crater\Traits\GeneratesMenuTrait;
+use Database\Seeders\CraterVersion610;
 use Illuminate\Http\Request;
 use Silber\Bouncer\BouncerFacade;
 
@@ -55,6 +56,35 @@ class BootstrapController extends Controller
             : Currency::first();
 
         BouncerFacade::refreshFor($current_user);
+
+        // Plan 05 §7 + plan 09 §F11 — instalaciones existentes
+        // (pre-merge) no tienen las abilities de DeliveryNote y el
+        // gateway `route.meta.ability` las bloquea redirigiendo a
+        // `account.settings`. El seeder CraterVersion610 ya existe y
+        // es idempotente. Lo aplicamos una vez por instalación, y
+        // marcamos un sentinel en `Setting` para no repetir.
+        //
+        // - En installs nuevos:       DatabaseSeeder lo invoca al
+        //   poblar, sentinel nace `true`, este bloque es un no-op.
+        // - En installs pre-existentes: la primera llamada al
+        //   bootstrap aplica las abilities faltantes sin tocar UI.
+        try {
+            if (class_exists(CraterVersion610::class)
+                && ! Setting::getSetting('crater_v610_abilities_seeded')) {
+                $seeder = new CraterVersion610();
+                $seeder->setContainer(app());
+                $seeder->run();
+                Setting::setSetting(
+                    'crater_v610_abilities_seeded',
+                    (string) now()->timestamp
+                );
+            }
+        } catch (\Throwable $e) {
+            // No abortamos el bootstrap si el seed falla; la
+            // ausencia de abilities sólo bloquea rutas protegidas,
+            // no la carga básica de la app.
+            report($e);
+        }
 
         $global_settings = Setting::getSettings([
             'api_token',
