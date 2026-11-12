@@ -2,6 +2,7 @@
 
 namespace Crater\Services\Documents\Index;
 
+use Crater\Models\DeliveryNote;
 use Crater\Models\Estimate;
 use Crater\Models\Invoice;
 use Crater\Models\RecurringInvoice;
@@ -53,6 +54,14 @@ final class DocumentIndex
             ->merge(Invoice::where('company_id', $companyId)->get())
             ->merge(Estimate::where('company_id', $companyId)->get())
             ->merge(RecurringInvoice::where('company_id', $companyId)->get());
+
+        // F11 — DeliveryNote se une al union si la clase existe (forward
+        // compatible con proyectos donde el plan 11 aun no haya migrado).
+        if (class_exists(DeliveryNote::class)) {
+            $all = $all->merge(
+                DeliveryNote::where('company_id', $companyId)->get()
+            );
+        }
 
         // Forward-compatible emit: si `$capability` existe y el modelo
         // la implementa, se incluye. Si no (Estrategia A actual: los
