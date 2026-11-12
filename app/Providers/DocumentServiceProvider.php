@@ -2,6 +2,7 @@
 
 namespace Crater\Providers;
 
+use Crater\Services\Documents\Converters\DeliveryNoteToInvoiceConverter;
 use Crater\Services\Documents\Converters\EstimateToInvoiceConverter;
 use Crater\Services\Documents\Converters\RecurringToInvoiceConverter;
 use Crater\Services\Documents\DocumentConverterRegistry;
@@ -33,16 +34,18 @@ class DocumentServiceProvider extends ServiceProvider
             );
         });
 
-        // F3 (PR-04) y F4 (PR-05): registry de converters.
+        // F3 (PR-04), F4 (PR-05), F11 (PR-12): registry de converters.
         // EstimateToInvoiceConverter (F3) + RecurringToInvoiceConverter
-        // (F4) pre-registrados; F11 añadirá DeliveryNoteToInvoiceConverter.
-        // F8 — ambos converters reciben ConnectionInterface para su
-        // transacción atómica con lockForUpdate (idempotencia bajo
-        // doble click).
+        // (F4) + DeliveryNoteToInvoiceConverter (F11) pre-registrados.
+        // F8 — todos reciben ConnectionInterface para su transacción
+        // atómica con lockForUpdate (idempotencia bajo doble click).
+        // F11 — el de DeliveryNote usa la FK `invoices.delivery_note_id`
+        // UNIQUE como fuente única de la relación.
         $this->app->singleton(DocumentConverterRegistry::class, function ($app) {
             $registry = new DocumentConverterRegistry();
             $registry->register(new EstimateToInvoiceConverter($app['db.connection']));
             $registry->register(new RecurringToInvoiceConverter($app['db.connection']));
+            $registry->register(new DeliveryNoteToInvoiceConverter($app['db.connection']));
 
             return $registry;
         });

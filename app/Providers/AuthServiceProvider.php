@@ -31,6 +31,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         \Crater\Models\Customer::class => \Crater\Policies\CustomerPolicy::class,
+        \Crater\Models\DeliveryNote::class => \Crater\Policies\DeliveryNotePolicy::class,
         \Crater\Models\Invoice::class => \Crater\Policies\InvoicePolicy::class,
         \Crater\Models\Estimate::class => \Crater\Policies\EstimatePolicy::class,
         \Crater\Models\Payment::class => \Crater\Policies\PaymentPolicy::class,

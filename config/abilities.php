@@ -4,6 +4,7 @@ use Crater\Models\Brand;
 use Crater\Models\Calculator;
 use Crater\Models\Customer;
 use Crater\Models\CustomField;
+use Crater\Models\DeliveryNote;
 use Crater\Models\Estimate;
 use Crater\Models\ExchangeRateProvider;
 use Crater\Models\Expense;
@@ -231,6 +232,65 @@ return [
             "name" => "send estimate",
             "ability" => "send-estimate",
             "model" => Estimate::class,
+        ],
+
+        // Delivery Note (plan 09 §F11 + plan 05)
+        [
+            "name" => "view delivery note",
+            "ability" => "view-delivery-note",
+            "model" => DeliveryNote::class,
+        ],
+        [
+            "name" => "create delivery note",
+            "ability" => "create-delivery-note",
+            "model" => DeliveryNote::class,
+            "owner_only" => false,
+            "depends_on" => [
+                'view-delivery-note',
+                'view-item',
+                'view-tax-type',
+                'view-customer',
+                'view-custom-field',
+            ],
+        ],
+        [
+            "name" => "edit delivery note",
+            "ability" => "edit-delivery-note",
+            "model" => DeliveryNote::class,
+            "depends_on" => [
+                'view-delivery-note',
+                'view-item',
+                'view-tax-type',
+                'view-customer',
+                'view-custom-field',
+            ],
+        ],
+        [
+            "name" => "delete delivery note",
+            "ability" => "delete-delivery-note",
+            "model" => DeliveryNote::class,
+            "depends_on" => [
+                'view-delivery-note',
+            ],
+        ],
+        [
+            "name" => "send delivery note",
+            "ability" => "send-delivery-note",
+            "model" => DeliveryNote::class,
+        ],
+        [
+            "name" => "convert delivery note to invoice",
+            "ability" => "convert-delivery-note-invoice",
+            "model" => DeliveryNote::class,
+            "owner_only" => false,
+            "depends_on" => [
+                'view-delivery-note',
+                'view-item',
+                'view-tax-type',
+                'view-customer',
+                'view-invoice',
+                'view-custom-field',
+            ],
         ],
         [
             "name" => "convert estimate to invoice",
