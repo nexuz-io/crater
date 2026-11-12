@@ -312,8 +312,8 @@ function convertToInvoice(id) {
     .then((res) => {
       if (res) {
         deliveryNoteStore.convertToInvoice(id).then((response) => {
-          if (response && response.data) {
-            router.push(`/admin/invoices/${response.data.id}/edit`)
+          if (response && response.data && response.data.data) {
+            router.push(`/admin/invoices/${response.data.data.id}/edit`)
           }
         })
       }

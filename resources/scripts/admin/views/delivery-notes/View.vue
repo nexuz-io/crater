@@ -505,8 +505,8 @@ async function onConvertToInvoice() {
     .then((res) => {
       if (res) {
         deliveryNoteStore.convertToInvoice(deliveryNoteData.value.id).then((response) => {
-          if (response && response.data) {
-            router.push(`/admin/invoices/${response.data.id}/edit`)
+          if (response && response.data && response.data.data) {
+            router.push(`/admin/invoices/${response.data.data.id}/edit`)
           }
         })
       }
