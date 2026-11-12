@@ -96,6 +96,18 @@ class Estimate extends Model implements HasMedia
         return $this->hasMany(Tax::class);
     }
 
+    /**
+     * Plan 09 §F5 — Invoices derivadas de esta Estimate.
+     *
+     * Relación inversa a `invoices.from_estimate_id` (FK introducida
+     * por la migración `2026_11_11_140000_add_from_estimate_id_to_invoices_table`).
+     * Usada en futuros listados y reportes para navegar Estimate → Invoices.
+     */
+    public function invoicesFromEstimate()
+    {
+        return $this->hasMany(Invoice::class, 'from_estimate_id');
+    }
+
     public function getFormattedExpiryDateAttribute($value)
     {
         $dateFormat = CompanySetting::getSetting('carbon_date_format', $this->company_id);
