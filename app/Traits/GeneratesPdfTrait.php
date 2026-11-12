@@ -147,8 +147,13 @@ trait GeneratesPdfTrait
             '{CONTACT_WEBSITE}' => $customer->website,
         ];
 
-        $customFields = $this->fields;
-        $customerCustomFields = $this->customer->fields;
+        // `$this->fields` sólo existe si el modelo usa HasCustomFieldsTrait;
+        // si no, sería null y el foreach reventaría con
+        // "foreach() argument must be of type array|object, null given".
+        // null-coalesce a Collection vacia mantiene la firma y permite que
+        // modelos sin custom fields (DeliveryNote) sigan funcionando.
+        $customFields = $this->fields ?? collect();
+        $customerCustomFields = $this->customer->fields ?? collect();
 
         foreach ($customFields as $customField) {
             $fields['{'.$customField->customField->slug.'}'] = $customField->defaultAnswer;

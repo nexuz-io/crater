@@ -149,7 +149,7 @@
         </tr>
         <tr>
             <td class="attribute-label">@lang('delivery_note_date_label')</td>
-            <td>{{ $deliveryNote->delivery_date ? \Carbon\Carbon::parse($deliveryNote->delivery_date)->format(app_date_format()) : '' }}</td>
+            <td>{{ $deliveryNote->formattedDeliveryDate ?? '' }}</td>
         </tr>
         <tr>
             <td class="attribute-label">@lang('status')</td>

@@ -10,6 +10,7 @@
  */
 
 use Crater\Models\Company;
+use Crater\Models\DeliveryNote;
 use Crater\Models\EmailLog;
 use Crater\Models\Estimate;
 use Crater\Models\Invoice;
@@ -56,6 +57,14 @@ return [
         Payment::class => [
             'salt' => Payment::class.config('app.key'),
             'length' => 20,
+            'alphabet' => 'asqtW3eDRIxB65GYl7UVLS1dybn9XrKTZ4zO',
+        ],
+        DeliveryNote::class => [
+            'salt' => DeliveryNote::class.config('app.key'),
+            'length' => 20,
+            // Mismo alfabeto que Payment por consistencia (los albaranes
+            // se comportan como documentos operativos(link público)
+            // y no necesitan distinguirse visualmente de otros).
             'alphabet' => 'asqtW3eDRIxB65GYl7UVLS1dybn9XrKTZ4zO',
         ],
         Company::class => [

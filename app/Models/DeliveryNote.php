@@ -78,6 +78,27 @@ class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasIte
         'due_date',
     ];
 
+    /**
+     * Asigna `unique_hash` post-creación con el patrón Invoice/
+     * Estimate: `Hashids::connection(DeliveryNote::class)->encode($id)`.
+     *
+     * Sin este hook el accessor `getDeliveryNotePdfUrlAttribute`
+     * retorna null y el iframe del admin se queda sin `src`, por lo
+     * que el preview del PDF nunca carga. Usamos `saveQuietly` para
+     * no spamear eventos `updated` que re-despacharían
+     * `GenerateDeliveryNotePdfJob` ni cascadas de audit.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (self $deliveryNote) {
+            if (empty($deliveryNote->unique_hash)) {
+                $deliveryNote->unique_hash = Hashids::connection(self::class)
+                    ->encode($deliveryNote->id);
+                $deliveryNote->saveQuietly();
+            }
+        });
+    }
+
     protected $appends = [
         'formattedCreatedAt',
         'formattedDeliveryDate',
