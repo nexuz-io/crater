@@ -51,7 +51,7 @@ beforeEach(function () {
 
 it('DocumentConverterRegistry resuelve estimate->invoice por clave', function () {
     $registry = new DocumentConverterRegistry();
-    $registry->register(new EstimateToInvoiceConverter());
+    $registry->register(new EstimateToInvoiceConverter(app('db.connection')));
 
     $converter = $registry->get('estimate', 'invoice');
     expect($converter)->toBeInstanceOf(EstimateToInvoiceConverter::class);
@@ -67,7 +67,7 @@ it('DocumentConverterRegistry es singleton del container', function () {
 });
 
 it('EstimateToInvoiceConverter rechaza origen no-Estimate', function () {
-    $converter = new EstimateToInvoiceConverter();
+    $converter = new EstimateToInvoiceConverter(app('db.connection'));
     expect(fn () => $converter->convert(new \stdClass()))->toThrow(\InvalidArgumentException::class);
 });
 
@@ -132,7 +132,7 @@ it('convert produce una Invoice con los 28 campos derivados del Estimate', funct
 
     $estimate->refresh()->load('items', 'taxes');
 
-    $converter = new EstimateToInvoiceConverter();
+    $converter = new EstimateToInvoiceConverter(app('db.connection'));
     $invoice = $converter->convert($estimate);
 
     expect($invoice)->toBeInstanceOf(Invoice::class);
@@ -192,7 +192,7 @@ it('Estimate::invoicesFromEstimate() navega la relacion inversa via FK', functio
         'unique_hash' => 'poc-f5-relation-'.time(),
     ]);
 
-    $converter = new EstimateToInvoiceConverter();
+    $converter = new EstimateToInvoiceConverter(app('db.connection'));
     $invoice = $converter->convert($estimate);
 
     $estimate->refresh();
@@ -252,7 +252,7 @@ it('los items del estimate quedan como invoice_items del invoice', function () {
 
     $estimate->refresh()->load('items');
 
-    $converter = new EstimateToInvoiceConverter();
+    $converter = new EstimateToInvoiceConverter(app('db.connection'));
     $invoice = $converter->convert($estimate);
 
     expect($invoice->items()->count())->toBe(2);
@@ -301,7 +301,7 @@ it('los taxes del estimate quedan con estimate_id = null en la invoice', functio
 
     $estimate->refresh()->load('taxes');
 
-    $converter = new EstimateToInvoiceConverter();
+    $converter = new EstimateToInvoiceConverter(app('db.connection'));
     $invoice = $converter->convert($estimate);
 
     expect($invoice->taxes()->count())->toBe(1);
@@ -310,4 +310,54 @@ it('los taxes del estimate quedan con estimate_id = null en la invoice', functio
     expect($invoiceTax->estimate_id)->toBeNull(); // desvinculado
     expect((int) $invoiceTax->amount)->toBe(25);
     expect($invoiceTax->name)->toBe('F3-Tax');
+});
+
+it('two consecutive convert() calls produce one Invoice (T9 idempotence)', function () {
+    // Plan 09 §F8: el segundo convert() bajo doble click debe devolver
+    // la misma Invoice gracias al chequeo por `from_estimate_id`.
+    $user = User::find(1);
+    $company = $user->companies()->first();
+    $currency = Currency::find(1);
+
+    $customer = Customer::factory()->create([
+        'company_id' => $company->id,
+        'creator_id' => $user->id,
+        'currency_id' => $currency->id,
+    ]);
+
+    $estimate = Estimate::factory()->create([
+        'creator_id' => $user->id,
+        'company_id' => $company->id,
+        'customer_id' => $customer->id,
+        'currency_id' => $currency->id,
+        'sub_total' => 100,
+        'tax' => 5,
+        'total' => 105,
+        'exchange_rate' => 1,
+        'discount' => 0,
+        'discount_val' => 0,
+        'discount_type' => 'percentage',
+        'tax_per_item' => 'NO',
+        'discount_per_item' => 'NO',
+        'sales_tax_type' => 'none',
+        'sales_tax_address_type' => 'none',
+        'template_name' => 'estimate1',
+        'status' => Estimate::STATUS_DRAFT,
+        'unique_hash' => 'poc-f8-'.time(),
+    ]);
+    $estimate->refresh()->load('items', 'taxes');
+
+    $converter = new EstimateToInvoiceConverter(app('db.connection'));
+
+    $first = $converter->convert($estimate);
+    $second = $converter->convert($estimate);
+    $third = $converter->convert($estimate);
+
+    // Las 3 invocaciones devuelven la misma Invoice.
+    expect((int) $first->id)->toBe((int) $second->id);
+    expect((int) $second->id)->toBe((int) $third->id);
+
+    // Y la BD solo tiene una Invoice con from_estimate_id = $estimate->id.
+    $count = \Crater\Models\Invoice::where('from_estimate_id', $estimate->id)->count();
+    expect($count)->toBe(1);
 });
