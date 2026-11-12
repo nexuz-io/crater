@@ -2,6 +2,8 @@
 
 namespace Crater\Providers;
 
+use Crater\Services\Documents\Converters\EstimateToInvoiceConverter;
+use Crater\Services\Documents\DocumentConverterRegistry;
 use Crater\Services\Documents\DocumentTotalsCalculator;
 use Crater\Services\Documents\DocumentWriter;
 use Illuminate\Support\ServiceProvider;
@@ -26,6 +28,16 @@ class DocumentServiceProvider extends ServiceProvider
                 $app['db.connection'],
                 $app->make(DocumentTotalsCalculator::class),
             );
+        });
+
+        // F3 (PR-04): registry de converters. EstimateToInvoiceConverter se
+        // registra aquí; F4 añadirá RecurringToInvoiceConverter, F11
+        // DeliveryNoteToInvoiceConverter.
+        $this->app->singleton(DocumentConverterRegistry::class, function () {
+            $registry = new DocumentConverterRegistry();
+            $registry->register(new EstimateToInvoiceConverter());
+
+            return $registry;
         });
     }
 
