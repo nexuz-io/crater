@@ -49,10 +49,15 @@ use Vinkla\Hashids\Facades\Hashids;
  *   queda como shell. Se introduce con E10 fuera del scope de F11.
  * - Payable: solo Invoice lo implementa (matriz §3).
  * - Mailable, Billable (entrada de factura): converter los emite.
- * - Deliverable: el `DeliveryNote` ES el deliverable; no necesita
- *   implementar la interfaz conceptual (matriz §3 lo declara así).
+ * - HasMedia: para almacenar PDFs/adjuntos vía spatie/laravel-medialibrary.
+ * - HasHistoricalSnapshots NO se implementa directamente porque la
+ *   convención real del proyecto (ver Invoice.php) usa accesores
+ *   `getXxxAttribute()` con `$appends`, NO métodos abstractos de
+ *   la interfaz `HasHistoricalSnapshots`. La interfaz queda como
+ *   contrato conceptual de plan 06 que el modelo no requiere
+ *   cargar para funcionar. Los accesores siguen ahí en `$appends`.
  */
-class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasItems, HasTaxes, Printable, Billable, SerialNumbered, HasHistoricalSnapshots, HasMedia
+class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasItems, HasTaxes, Printable, Billable, SerialNumbered, HasMedia
 {
     use HasFactory;
     use GeneratesPdfTrait;
@@ -203,13 +208,29 @@ class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasIte
         ];
     }
 
-    public function customerSnapshot(): \Crater\DataObjects\Documents\CustomerSnapshot
+    // -----------------------------------------------------------------
+    // `$appends` accessors.
+    //
+    // Laravel's serializer und `customerSnapshot`,
+    // `billingAddress` y `shippingAddress` requieren accesores con
+    // la convención `getXxxAttribute` (o `Attribute::make()`-typed
+    // methods). Los métodos sueltos NO satisfacen el contrato:
+    // durante la conversión a JSON Laravel lanza
+    // BadMethodCallException("Call to undefined method
+    //   getCustomerSnapshotAttribute()").
+    //
+    // Plan 09 §F11: este bloque lo cubría inicialmente con métodos
+    // `customerSnapshot()`, `billingAddress()` y `shippingAddress()`,
+    // pero la firma es confusión! la convención de Laravel es
+    // `getXxxAttribute`. Renombrado en este commit.
+    // -----------------------------------------------------------------
+    public function getCustomerSnapshotAttribute(): \Crater\DataObjects\Documents\CustomerSnapshot
     {
         return app(\Crater\Services\Documents\DocumentSnapshotter::class)
             ->snapshotCustomer($this->customer);
     }
 
-    public function billingAddress(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    public function getBillingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
     {
         if (! $this->customer) {
             return null;
@@ -225,7 +246,7 @@ class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasIte
             );
     }
 
-    public function shippingAddress(): ?\Crater\DataObjects\Documents\AddressSnapshot
+    public function getShippingAddressAttribute(): ?\Crater\DataObjects\Documents\AddressSnapshot
     {
         if (! $this->customer) {
             return null;
