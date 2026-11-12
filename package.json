@@ -2,9 +2,12 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/sync-static-assets.js",
     "build": "vite build",
+    "postbuild": "node scripts/sync-static-assets.js",
     "serve": "vite preview",
-    "test": "eslint ./resources/scripts --ext .js,.vue"
+    "test": "eslint ./resources/scripts --ext .js,.vue",
+    "sync:static": "node scripts/sync-static-assets.js"
   },
   "devDependencies": {
     "@rvxlab/tailwind-plugin-ios-full-height": "^1.0.0",

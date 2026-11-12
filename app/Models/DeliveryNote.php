@@ -506,6 +506,25 @@ class DeliveryNote extends Model implements DocumentContract, HasAmounts, HasIte
         $query->where('delivery_notes.customer_id', $customer_id);
     }
 
+    /**
+     * Filtra las albaranes por empresa activa (header `company`).
+     * Usado por `SidebarCountsController` y listados admin. Gemelo
+     * de `Estimate::scopeWhereCompany` / `Invoice::scopeWhereCompany`.
+     * Sin este scope, Laravel trata `DeliveryNote::whereCompany()`
+     * como `where company = ?` y revienta con
+     * "Undefined array key 0" en Query/Builder::addDynamic.
+     */
+    public function scopeWhereCompany($query)
+    {
+        $companyId = request()->header('company');
+
+        if (! $companyId) {
+            return $query;
+        }
+
+        $query->where('delivery_notes.company_id', $companyId);
+    }
+
     public function scopePaginateData($query, $limit)
     {
         if ($limit == 'all') {
