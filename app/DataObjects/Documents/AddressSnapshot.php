@@ -29,4 +29,24 @@ final class AddressSnapshot
         public readonly string $type = self::TYPE_BILLING,
     ) {
     }
+
+    /**
+     * Construye un AddressSnapshot desde los atributos planos del
+     * modelo Address (que el modelo expone via getAttributes()) o
+     * desde el array del request de Customers.
+     */
+    public static function fromAttributes(array $attrs, string $type = self::TYPE_BILLING): self
+    {
+        return new self(
+            name: $attrs['name'] ?? null,
+            countryName: $attrs['country_name'] ?? null,
+            state: $attrs['state'] ?? null,
+            city: $attrs['city'] ?? null,
+            street1: $attrs['address_street_1'] ?? null,
+            street2: $attrs['address_street_2'] ?? null,
+            phone: $attrs['phone'] ?? null,
+            zip: $attrs['zip'] ?? null,
+            type: $type,
+        );
+    }
 }
