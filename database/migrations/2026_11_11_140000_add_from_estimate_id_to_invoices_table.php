@@ -40,7 +40,7 @@ class AddFromEstimateIdToInvoicesTable extends Migration
     {
         if (Schema::hasTable('invoices') && ! Schema::hasColumn('invoices', 'from_estimate_id')) {
             Schema::table('invoices', function (Blueprint $table) {
-                $table->unsignedBigInteger('from_estimate_id')->nullable();
+                $table->unsignedInteger('from_estimate_id')->nullable();
                 $table->foreign('from_estimate_id')
                     ->references('id')->on('estimates')
                     ->onDelete('set null');

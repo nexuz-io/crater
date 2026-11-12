@@ -25,7 +25,7 @@ class CreateDeliveryNoteItemsTable extends Migration
             Schema::create('delivery_note_items', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->unsignedBigInteger('delivery_note_id')->nullable();
-                $table->unsignedBigInteger('item_id')->nullable();
+                $table->unsignedInteger('item_id')->nullable();
                 $table->unsignedInteger('company_id')->nullable();
 
                 $table->string('name');
